@@ -1,14 +1,14 @@
-// Copyright (C) 2019-2020 Centrality Investments Limited
+// Copyright 2022-2023 Futureverse Corporation Limited
 //!
-//! # CENNZnut - Module
+//! # TRNNut - Module
 //!
-//! Delegated runtime module permissioning of CENNZnut for use in CENNZnet
+//! Delegated runtime module permissions of TRNNut for use in TRN
 //!
 
 use super::method::Method;
 use super::MAX_METHODS;
 use super::WILDCARD;
-use crate::cennznut::{MethodName, ModuleName};
+use crate::trnnut::{MethodName, ModuleName};
 #[cfg(feature = "std")]
 use ::serde::{Deserialize, Serialize};
 use alloc::borrow::ToOwned;
@@ -18,7 +18,7 @@ use codec::{Decode, Encode, Input, Output};
 use core::convert::TryFrom;
 const BLOCK_COOLDOWN_MASK: u8 = 0b0000_0001;
 
-/// A CENNZnet permission domain module
+/// A TRN permission domain module
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
 pub struct Module {

@@ -1,6 +1,6 @@
-// Copyright (C) 2019-2020 Centrality Investments Limited
+// Copyright 2022-2023 Futureverse Corporation Limited
 //!
-//! CENNZnut - Integration Tests
+//! TRNNut - Integration Tests
 //!
 
 #![cfg(test)]
@@ -8,11 +8,11 @@
 use super::contract::Contract;
 use super::method::Method;
 use super::module::Module;
-use crate::cennznut::{
+use crate::trnnut::{
     v0::{MAX_CONTRACTS, MAX_METHODS, MAX_MODULES},
     ContractAddress, ContractDomain, MethodName, ModuleName, RuntimeDomain, WILDCARD,
 };
-use crate::{CENNZnut, CENNZnutV0, TryFrom, ValidationErr};
+use crate::{TRNNut, TRNNutV0, TryFrom, ValidationErr};
 
 use codec::{Decode, Encode};
 use pact::contract::{Contract as PactContract, DataTable};
@@ -62,8 +62,8 @@ fn it_works_encode() {
     let contract = Contract::new(&[0x5a_u8; 32]);
     let contracts = make_contracts(&contract);
 
-    let cennznut = CENNZnutV0 { modules, contracts };
-    let encoded = cennznut.encode();
+    let trnnut = TRNNutV0 { modules, contracts };
+    let encoded = trnnut.encode();
 
     let expected_version = vec![0, 0];
     let expected_modules = vec![
@@ -89,10 +89,10 @@ fn it_works_encode_one_module() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     assert_eq!(
-        cennznut.encode(),
+        trnnut.encode(),
         vec![
             0, 0, 0, 0, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 109, 101, 116, 104, 111, 100, 95, 116,
@@ -108,7 +108,7 @@ fn it_works_encode_one_contract() {
     let contract = Contract::new(&[0x5a_u8; 32]);
     let contracts = make_contracts(&contract);
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     let expected_version = vec![0, 0];
     let expected_modules = MODULE_CONTRACT_BYTES.to_vec();
@@ -117,7 +117,7 @@ fn it_works_encode_one_contract() {
     let expected_contracts = [expected_contract_header, expected_contract_address].concat();
 
     assert_eq!(
-        cennznut.encode(),
+        trnnut.encode(),
         [expected_version, expected_modules, expected_contracts].concat()
     );
 }
@@ -135,10 +135,10 @@ fn it_works_decode() {
     let encoded_contracts: Vec<u8> = [encoded_contract_header, encoded_contract_address].concat();
 
     let encoded: Vec<u8> = [encoded_version, encoded_modules, encoded_contracts].concat();
-    let c: CENNZnut = Decode::decode(&mut &encoded[..]).expect("it works");
+    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("it works");
 
     assert_eq!(c.encode(), encoded);
-    let c0 = CENNZnutV0::try_from(c).unwrap();
+    let c0 = TRNNutV0::try_from(c).unwrap();
     assert_eq!(c0.modules.len(), 1);
     assert_eq!(c0.contracts.len(), 1);
 }
@@ -155,10 +155,10 @@ fn it_works_encode_with_module_cooldown() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     assert_eq!(
-        cennznut.encode(),
+        trnnut.encode(),
         vec![
             0, 0, 0, 1, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 81, 1, 0, 0, 109, 101, 116, 104, 111,
@@ -175,7 +175,7 @@ fn it_works_encode_with_contract_cooldown() {
     let contract = Contract::new(&[0x8b_u8; 32]).block_cooldown(0x4433_2211);
     let contracts = make_contracts(&contract);
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     let expected_version = vec![0, 0];
     let expected_modules = MODULE_CONTRACT_BYTES.to_vec();
@@ -190,7 +190,7 @@ fn it_works_encode_with_contract_cooldown() {
     .concat();
 
     assert_eq!(
-        cennznut.encode(),
+        trnnut.encode(),
         [expected_version, expected_modules, expected_contracts].concat()
     );
 }
@@ -202,8 +202,8 @@ fn it_works_decode_with_module_cooldown() {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 81, 1, 0, 0, 109, 101, 116, 104, 111, 100, 95,
         116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
-    let c: CENNZnut = Decode::decode(&mut &encoded[..]).expect("It works");
-    let c0 = CENNZnutV0::try_from(c).unwrap();
+    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("It works");
+    let c0 = TRNNutV0::try_from(c).unwrap();
     assert_eq!(
         c0.get_module("module_test")
             .expect("module exists")
@@ -224,10 +224,10 @@ fn it_works_encode_with_method_cooldown() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     assert_eq!(
-        cennznut.encode(),
+        trnnut.encode(),
         vec![
             0, 0, 0, 1, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 81, 1, 0, 1, 109, 101, 116, 104, 111,
@@ -245,8 +245,8 @@ fn it_works_decode_with_method_cooldown() {
         116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 123, 0,
         0, 0, 0,
     ];
-    let c: CENNZnut = Decode::decode(&mut &encoded[..]).expect("It works");
-    let c0 = CENNZnutV0::try_from(c).unwrap();
+    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("It works");
+    let c0 = TRNNutV0::try_from(c).unwrap();
     assert_eq!(
         c0.get_module("module_test")
             .expect("module exists")
@@ -272,7 +272,7 @@ fn it_works_encode_two_contracts() {
     let mut contracts = make_contracts(&contract_a);
     contracts.push((contract_b.address, contract_b));
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     let expected_version = vec![0, 0];
     let expected_modules = MODULE_CONTRACT_BYTES.to_vec();
@@ -295,7 +295,7 @@ fn it_works_encode_two_contracts() {
     .concat();
 
     assert_eq!(
-        cennznut.encode(),
+        trnnut.encode(),
         [expected_version, expected_modules, expected_contracts].concat()
     );
 }
@@ -309,10 +309,10 @@ fn it_works_decode_one_contract() {
     let encoded_contracts: Vec<u8> = [encoded_contract_header, encoded_contract_address].concat();
 
     let encoded: Vec<u8> = [encoded_version, encoded_modules, encoded_contracts].concat();
-    let c: CENNZnut = Decode::decode(&mut &encoded[..]).expect("it works");
+    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("it works");
 
     assert_eq!(c.encode(), encoded);
-    let c0 = CENNZnutV0::try_from(c).unwrap();
+    let c0 = TRNNutV0::try_from(c).unwrap();
     assert_eq!(c0.modules.len(), 1);
     assert_eq!(c0.contracts.len(), 1);
 }
@@ -336,10 +336,10 @@ fn it_works_decode_two_contracts() {
     .concat();
 
     let encoded: Vec<u8> = [encoded_version, encoded_modules, encoded_contracts].concat();
-    let c: CENNZnut = Decode::decode(&mut &encoded[..]).expect("it works");
+    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("it works");
 
     assert_eq!(c.encode(), encoded);
-    let c0 = CENNZnutV0::try_from(c).unwrap();
+    let c0 = TRNNutV0::try_from(c).unwrap();
     assert_eq!(c0.modules.len(), 1);
     assert_eq!(c0.contracts.len(), 2);
 }
@@ -348,7 +348,7 @@ fn it_works_decode_two_contracts() {
 fn it_works_decode_with_version_0() {
     let encoded: Vec<u8> = vec![1, 2, 3, 192];
     assert_eq!(
-        CENNZnutV0::decode(&mut &encoded[..]),
+        TRNNutV0::decode(&mut &encoded[..]),
         Err(codec::Error::from("expected version : 0"))
     );
 }
@@ -374,8 +374,8 @@ fn it_works_encode_with_constraints() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
-    let encoded = cennznut.encode();
+    let trnnut = TRNNutV0 { modules, contracts };
+    let encoded = trnnut.encode();
 
     assert_eq!(
         encoded,
@@ -402,10 +402,10 @@ fn it_works_decode_with_constraints() {
         246, 0, 0, 0, 0, 0, 0, 0, 128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116,
         105, 110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1, 0,
     ];
-    let c: CENNZnut = Decode::decode(&mut &encoded[..]).expect("it works");
+    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("it works");
     assert_eq!(c.encode(), encoded);
 
-    let c0 = CENNZnutV0::try_from(c).unwrap();
+    let c0 = TRNNutV0::try_from(c).unwrap();
     let method = &c0
         .get_module("module_test")
         .expect("module exists")
@@ -442,7 +442,7 @@ fn it_works_with_lots_of_things_codec() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     let encoded = vec![
         0, 0, 1, 3, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -456,8 +456,8 @@ fn it_works_with_lots_of_things_codec() {
         101, 115, 116, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 1, 0, 0,
         0,
     ];
-    assert_eq!(cennznut.encode(), encoded);
-    assert_eq!(cennznut, CENNZnutV0::decode(&mut &encoded[..]).unwrap());
+    assert_eq!(trnnut.encode(), encoded);
+    assert_eq!(trnnut, TRNNutV0::decode(&mut &encoded[..]).unwrap());
 }
 
 #[test]
@@ -484,22 +484,22 @@ fn it_validates_modules() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [
         PactType::Numeric(Numeric(123)),
         PactType::StringLike(StringLike(b"test")),
     ];
 
     assert_eq!(
-        cennznut.validate_module(&module.name, &method.name, &args),
+        trnnut.validate_module(&module.name, &method.name, &args),
         Ok(())
     );
     assert_eq!(
-        cennznut.validate_module("module_test2", &method.name, &args),
+        trnnut.validate_module("module_test2", &method.name, &args),
         Err(ValidationErr::NoPermission(RuntimeDomain::Module))
     );
     assert_eq!(
-        cennznut.validate_module(&module.name, "method_test2", &args),
+        trnnut.validate_module(&module.name, "method_test2", &args),
         Err(ValidationErr::NoPermission(RuntimeDomain::Method))
     );
 }
@@ -511,9 +511,9 @@ fn it_validates_contracts() {
     let contract = Contract::new(&[0x12_u8; 32]);
     let contracts = make_contracts(&contract);
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
-    assert_eq!(cennznut.validate_contract(contract.address), Ok(()));
+    assert_eq!(trnnut.validate_contract(contract.address), Ok(()));
 }
 
 #[test]
@@ -523,10 +523,10 @@ fn it_invalidates_missing_contract() {
     let contract = Contract::new(&[0x12_u8; 32]);
     let contracts = make_contracts(&contract);
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
     assert_eq!(
-        cennznut.validate_contract([0x34_u8; 32]),
+        trnnut.validate_contract([0x34_u8; 32]),
         Err(ValidationErr::NoPermission(ContractDomain::Contract))
     );
 }
@@ -538,9 +538,9 @@ fn it_validates_wildcard_contract() {
     let contract = Contract::wildcard();
     let contracts = make_contracts(&contract);
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
-    assert_eq!(cennznut.validate_contract(contract.address), Ok(()));
+    assert_eq!(trnnut.validate_contract(contract.address), Ok(()));
 }
 
 #[test]
@@ -564,11 +564,11 @@ fn it_validate_modules_error_with_bad_bytecode() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [PactType::StringLike(StringLike(b"test"))];
 
     assert_eq!(
-        cennznut.validate_module(&module.name, &method.name, &args),
+        trnnut.validate_module(&module.name, &method.name, &args),
         Err(ValidationErr::ConstraintsInterpretation)
     );
 }
@@ -597,14 +597,14 @@ fn it_validate_modules_error_with_false_constraints() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [
         PactType::Numeric(Numeric(321)),
         PactType::StringLike(StringLike(b"b")),
     ];
 
     assert_eq!(
-        cennznut.validate_module(&module.name, &method.name, &args),
+        trnnut.validate_module(&module.name, &method.name, &args),
         Err(ValidationErr::NoPermission(RuntimeDomain::MethodArguments))
     );
 }
@@ -621,21 +621,21 @@ fn it_validate_modules_with_empty_constraints() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [
         PactType::Numeric(Numeric(0)),
         PactType::StringLike(StringLike(b"test")),
     ];
 
     assert_eq!(
-        cennznut.validate_module(&module.name, &method.name, &args),
+        trnnut.validate_module(&module.name, &method.name, &args),
         Ok(())
     );
 }
 
 #[test]
 fn it_works_get_pact() {
-    // A CENNZnut with constraints set
+    // A TRNNut with constraints set
     let encoded_with: Vec<u8> = vec![
         0, 0, 0, 0, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 109, 101, 116, 104, 111, 100, 95, 116, 101, 115,
@@ -644,9 +644,9 @@ fn it_works_get_pact() {
         105, 110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1, 0,
     ];
 
-    let cennznut_with: CENNZnut = Decode::decode(&mut &encoded_with[..]).expect("it works");
-    let cennznut_with_v0 = CENNZnutV0::try_from(cennznut_with).unwrap();
-    let pact_with = cennznut_with_v0
+    let trnnut_with: TRNNut = Decode::decode(&mut &encoded_with[..]).expect("it works");
+    let trnnut_with_v0 = TRNNutV0::try_from(trnnut_with).unwrap();
+    let pact_with = trnnut_with_v0
         .get_module("module_test")
         .expect("module exists")
         .get_method("method_test")
@@ -667,16 +667,16 @@ fn it_works_get_pact() {
         );
     }
 
-    // A CENNZnut without constraints set
+    // A TRNNut without constraints set
     let encoded_without: Vec<u8> = vec![
         0, 0, 0, 0, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 109, 101, 116, 104, 111, 100, 95, 116, 101, 115,
         116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
 
-    let cennznut_without: CENNZnut = Decode::decode(&mut &encoded_without[..]).expect("it works");
-    let cennznut_without_v0 = CENNZnutV0::try_from(cennznut_without).unwrap();
-    let contract_without = cennznut_without_v0
+    let trnnut_without: TRNNut = Decode::decode(&mut &encoded_without[..]).expect("it works");
+    let trnnut_without_v0 = TRNNutV0::try_from(trnnut_without).unwrap();
+    let contract_without = trnnut_without_v0
         .get_module("module_test")
         .expect("module exists")
         .get_method("method_test")
@@ -711,11 +711,11 @@ fn wildcard_method_validate_modules() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [];
 
     assert_eq!(
-        cennznut.validate_module(&module.name, "my_unregistered_method", &args),
+        trnnut.validate_module(&module.name, "my_unregistered_method", &args),
         Ok(())
     );
 }
@@ -730,9 +730,9 @@ fn wildcard_module() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
-    let result = cennznut.get_module("my_unregistered_module");
+    let result = trnnut.get_module("my_unregistered_module");
     assert_eq!(result, Some(&module));
 }
 
@@ -746,11 +746,11 @@ fn wildcard_module_validate_modules() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [];
 
     assert_eq!(
-        cennznut.validate_module("my_unregistered_module", "registered_method", &args),
+        trnnut.validate_module("my_unregistered_module", "registered_method", &args),
         Ok(())
     );
 }
@@ -765,11 +765,11 @@ fn wildcard_module_wildcard_method_validate_modules() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [];
 
     assert_eq!(
-        cennznut.validate_module("my_unregistered_module", "my_unregistered_method", &args),
+        trnnut.validate_module("my_unregistered_module", "my_unregistered_method", &args),
         Ok(())
     );
 }
@@ -786,11 +786,11 @@ fn unregistered_module_fails_validation() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [];
 
     assert_eq!(
-        cennznut.validate_module("my_unregistered_module", "registered_method", &args),
+        trnnut.validate_module("my_unregistered_module", "registered_method", &args),
         Err(ValidationErr::NoPermission(RuntimeDomain::Module))
     );
 }
@@ -807,11 +807,11 @@ fn unregistered_method_fails_validation() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
     let args = [];
 
     assert_eq!(
-        cennznut.validate_module("registered_module", "my_unregistered_method", &args),
+        trnnut.validate_module("registered_module", "my_unregistered_method", &args),
         Err(ValidationErr::NoPermission(RuntimeDomain::Method))
     );
 }
@@ -852,9 +852,9 @@ fn registered_modules_have_priority_over_wildcard_modules() {
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-    let cennznut = CENNZnutV0 { modules, contracts };
+    let trnnut = TRNNutV0 { modules, contracts };
 
-    let result = cennznut.get_module("registered_module").unwrap();
+    let result = trnnut.get_module("registered_module").unwrap();
 
     assert_eq!(result.name, "registered_module");
 }
@@ -863,8 +863,8 @@ fn registered_modules_have_priority_over_wildcard_modules() {
 fn it_fails_to_encode_with_zero_modules() {
     let modules: Vec<(ModuleName, Module)> = Vec::default();
     let contracts = Vec::<(ContractAddress, Contract)>::default();
-    let cennznut = CENNZnutV0 { modules, contracts };
-    assert_eq!(cennznut.encode(), []);
+    let trnnut = TRNNutV0 { modules, contracts };
+    assert_eq!(trnnut.encode(), []);
 }
 
 #[test]
@@ -873,8 +873,8 @@ fn it_fails_to_encode_with_zero_methods() {
     let module = Module::new("TestModule").methods(methods);
     let modules = make_modules(&module);
     let contracts = Vec::<(ContractAddress, Contract)>::default();
-    let cennznut = CENNZnutV0 { modules, contracts };
-    assert_eq!(cennznut.encode(), []);
+    let trnnut = TRNNutV0 { modules, contracts };
+    assert_eq!(trnnut.encode(), []);
 }
 
 #[test]
@@ -887,8 +887,8 @@ fn it_fails_to_encode_with_too_many_modules() {
         modules.push((module.name.clone(), module));
     }
     let contracts = Vec::<(ContractAddress, Contract)>::default();
-    let cennznut = CENNZnutV0 { modules, contracts };
-    assert_eq!(cennznut.encode(), []);
+    let trnnut = TRNNutV0 { modules, contracts };
+    assert_eq!(trnnut.encode(), []);
 }
 
 #[test]
@@ -901,8 +901,8 @@ fn it_fails_to_encode_with_too_many_methods() {
     let module = Module::new("registered_module").methods(methods);
     let modules = make_modules(&module);
     let contracts = Vec::<(ContractAddress, Contract)>::default();
-    let cennznut = CENNZnutV0 { modules, contracts };
-    assert_eq!(cennznut.encode(), []);
+    let trnnut = TRNNutV0 { modules, contracts };
+    assert_eq!(trnnut.encode(), []);
 }
 
 #[test]
@@ -919,12 +919,12 @@ fn it_fails_to_encode_with_too_many_contracts() {
         let contract = Contract::new(&address);
         contracts.push((contract.address, contract.clone()));
     }
-    let cennznut = CENNZnutV0 { modules, contracts };
-    assert_eq!(cennznut.encode(), []);
+    let trnnut = TRNNutV0 { modules, contracts };
+    assert_eq!(trnnut.encode(), []);
 }
 
 #[test]
-fn it_fails_to_encode_when_cennznut_is_too_large() {
+fn it_fails_to_encode_when_trnnut_is_too_large() {
     // 33 bytes per method, 33 + 33 * Method bytes per module
     // if 64 methods, per 64 modules, total bytes > 137,000
     let mut methods: Vec<(MethodName, Method)> = Vec::default();
@@ -938,6 +938,6 @@ fn it_fails_to_encode_when_cennznut_is_too_large() {
         modules.push((module.name.clone(), module));
     }
     let contracts = Vec::<(ContractAddress, Contract)>::default();
-    let cennznut = CENNZnutV0 { modules, contracts };
-    assert_eq!(cennznut.encode(), []);
+    let trnnut = TRNNutV0 { modules, contracts };
+    assert_eq!(trnnut.encode(), []);
 }

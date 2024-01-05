@@ -1,8 +1,8 @@
 // Copyright (C) 2019-2020 Centrality Investments Limited
 //!
-//! # CENNZnut - Validation
+//! # TRNNut - Validation
 //!
-//! Validation trait of CENNZnut for use in CENNZnet
+//! Validation trait of TRNNut for use in TRN
 //!
 
 use alloc::fmt::{self, Display, Formatter};
@@ -19,7 +19,7 @@ impl<Domain: Display> Display for ValidationErr<Domain> {
         match self {
             Self::NoPermission(permission_domain) => write!(
                 f,
-                "CENNZnut does not grant permission for {}",
+                "TRNNut does not grant permission for {}",
                 permission_domain
             ),
             Self::ConstraintsInterpretation => write!(f, "error while interpreting constraints"),

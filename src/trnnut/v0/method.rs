@@ -1,11 +1,11 @@
-// Copyright (C) 2019-2020 Centrality Investments Limited
+// Copyright 2022-2023 Futureverse Corporation Limited
 //!
-//! # CENNZnut - Method
+//! # TRNNut - Method
 //!
-//! Delegated method permissioning of CENNZnut for use in CENNZnet
+//! Delegated method permissions of TRNNut for use in TRN
 //!
 
-use crate::cennznut::MethodName;
+use crate::trnnut::MethodName;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Input, Output};
@@ -18,7 +18,7 @@ const BLOCK_COOLDOWN_MASK: u8 = 0x01;
 const CONSTRAINTS_MASK: u8 = 0x02;
 const MAX_CONSTRAINTS: usize = 256;
 
-/// A CENNZnet permission domain module method
+/// A TRN permission domain module method
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
 pub struct Method {
