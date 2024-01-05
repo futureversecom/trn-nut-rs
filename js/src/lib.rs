@@ -1,11 +1,11 @@
 // Copyright 2022-2023 Futureverse Corporation Limited
 
 //! Provide JS-Rust API bindings to create and inspect TRNNut
+use parity_scale_codec::{Decode, Encode};
 use trnnut_rs::{
     v0::{contract::Contract, module::Module, TRNNutV0},
     TRNNut,
 };
-use parity_scale_codec::{Decode, Encode};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]

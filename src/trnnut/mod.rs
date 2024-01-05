@@ -136,7 +136,7 @@ impl TRNNut {
 #[cfg(test)]
 mod test {
     use super::v0::{contract::Contract, method::Method, module::Module};
-    use super::{TRNNut, TRNNutV0, ContractAddress, MethodName, ModuleName};
+    use super::{ContractAddress, MethodName, ModuleName, TRNNut, TRNNutV0};
 
     fn make_methods(method: &Method) -> Vec<(MethodName, Method)> {
         let mut methods = Vec::<(MethodName, Method)>::default();

@@ -197,11 +197,11 @@ impl TRNNutV0 {
 
 #[cfg(test)]
 mod test {
-    use super::TRNNutV0;
     use super::Contract;
     use super::ContractAddress;
     use super::Module;
     use super::ModuleName;
+    use super::TRNNutV0;
     use super::CONTRACT_WILDCARD;
 
     #[test]
@@ -262,10 +262,7 @@ mod test {
             contracts,
         };
 
-        assert_eq!(
-            trnnut.get_contract([0x55_u8; 32]),
-            Some(&contract_wildcard)
-        );
+        assert_eq!(trnnut.get_contract([0x55_u8; 32]), Some(&contract_wildcard));
     }
 
     #[test]
