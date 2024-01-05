@@ -74,7 +74,7 @@ impl TRNNutV0 {
 }
 
 impl Encode for TRNNutV0 {
-    fn encode_to<T: Output>(&self, buf: &mut T) {
+    fn encode_to<T: Output + ?Sized>(&self, buf: &mut T) {
         if self.modules.is_empty() || self.modules.len() > MAX_MODULES {
             return;
         }

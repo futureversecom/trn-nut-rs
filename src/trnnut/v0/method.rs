@@ -61,7 +61,7 @@ impl Method {
 }
 
 impl Encode for Method {
-    fn encode_to<T: Output>(&self, buf: &mut T) {
+    fn encode_to<T: Output + ?Sized>(&self, buf: &mut T) {
         let has_cooldown_byte: u8 = if self.block_cooldown.is_some() {
             BLOCK_COOLDOWN_MASK
         } else {

@@ -76,7 +76,7 @@ impl TryFrom<TRNNut> for TRNNutV0 {
 }
 
 impl Encode for TRNNut {
-    fn encode_to<T: Output>(&self, buf: &mut T) {
+    fn encode_to<T: Output + ?Sized>(&self, buf: &mut T) {
         match &self {
             V0(inner) => inner.encode_to(buf),
         }

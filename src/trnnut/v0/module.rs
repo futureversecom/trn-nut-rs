@@ -63,7 +63,7 @@ impl Module {
 }
 
 impl Encode for Module {
-    fn encode_to<T: Output>(&self, buf: &mut T) {
+    fn encode_to<T: Output + ?Sized>(&self, buf: &mut T) {
         if self.methods.is_empty() || self.methods.len() > MAX_METHODS {
             return;
         }
