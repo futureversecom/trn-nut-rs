@@ -1,4 +1,4 @@
-# trn-nut-rs
+# trnnut-rs
 
 The TRN permission domain set and codec.  
 Intended for use with Doughnuts on TRN to provide safe, delegated transactions.  
@@ -7,7 +7,7 @@ The formal spec. is available [here](https://github.com/cennznet/doughnut-paper/
 
 ## Generate JS/Wasm bindings
 
-This crate also generates an npm package <to be added>
+This crate also generates an npm package [@trn/trnnut-wasm](https://www.npmjs.com/package/@trn/trnnut-wasm)
 using [wasm-pack](https://rustwasm.github.io/docs/wasm-pack/).
 
 To generate the package run:

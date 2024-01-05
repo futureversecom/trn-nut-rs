@@ -3,9 +3,9 @@ name = "trnnut-rs"
 version = "0.1.1"
 authors = ["The Root Network Team"]
 edition = "2018"
-description = "The official rust trn-nut codec"
+description = "The official rust trnnut codec"
 license = "UNLICENSED"
-repository = "https://github.com/futureversecom/trn-nut-rs"
+repository = "https://github.com/futureversecom/trn-trnnut-rs"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "1.0.0", default-features = false }
