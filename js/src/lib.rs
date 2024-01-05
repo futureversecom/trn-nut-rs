@@ -1,9 +1,9 @@
-// Copyright 2019-2020 Centrality Investments Limited
+// Copyright 2022-2023 Futureverse Corporation Limited
 
-//! Provide JS-Rust API bindings to create and inspect Cennznut
-use cennznut::{
-    v0::{contract::Contract, module::Module, CENNZnutV0},
-    CENNZnut,
+//! Provide JS-Rust API bindings to create and inspect TRNNut
+use trnnut_rs::{
+    v0::{contract::Contract, module::Module, TRNNutV0},
+    TRNNut,
 };
 use parity_scale_codec::{Decode, Encode};
 use wasm_bindgen::prelude::*;
@@ -26,15 +26,15 @@ fn from_slice_32(bytes: &[u8]) -> [u8; 32] {
     array
 }
 
-/// A js handle for a rust versioned cennznut struct
-#[wasm_bindgen(js_name = CENNZnut)]
-pub struct JsHandle(CENNZnut);
+/// A js handle for a rust versioned trnnut struct
+#[wasm_bindgen(js_name = TRNNut)]
+pub struct JsHandle(TRNNut);
 
-#[wasm_bindgen(js_class = CENNZnut)]
+#[wasm_bindgen(js_class = TRNNut)]
 #[allow(irrefutable_let_patterns)]
 impl JsHandle {
     #[wasm_bindgen(constructor)]
-    /// Create a new Cennznut, it is always v0 for now
+    /// Create a new TRNNut, it is always v0 for now
     pub fn new(modules: &JsValue, contracts: &JsValue) -> Self {
         let modules_vec: Vec<(String, Module)> = modules
             .into_serde()
@@ -42,65 +42,65 @@ impl JsHandle {
         let contract_vec: Vec<([u8; 32], Contract)> = contracts
             .into_serde()
             .expect("Deserialization of contracts failed");
-        let cennznut: CENNZnutV0 = CENNZnutV0 {
+        let trnnut: TRNNutV0 = TRNNutV0 {
             modules: modules_vec,
             contracts: contract_vec,
         };
-        JsHandle(CENNZnut::V0(cennznut))
+        JsHandle(TRNNut::V0(trnnut))
     }
 
     #[allow(non_snake_case)]
-    /// Return the cennznut module
+    /// Return the trnnut module
     pub fn getModule(&self, module: &str) -> JsValue {
-        if let CENNZnut::V0(cennznut) = &self.0 {
-            if cennznut.get_module(module).is_none() {
+        if let TRNNut::V0(trnnut) = &self.0 {
+            if trnnut.get_module(module).is_none() {
                 return JsValue::UNDEFINED;
             }
-            return JsValue::from_serde(&cennznut.get_module(module).unwrap()).unwrap();
+            return JsValue::from_serde(&trnnut.get_module(module).unwrap()).unwrap();
         }
-        panic!("unsupported cennznut version");
+        panic!("unsupported trnnut version");
     }
 
     #[allow(non_snake_case)]
-    /// Return the cennznut contract
+    /// Return the trnnut contract
     pub fn getContract(&self, contract_address: &[u8]) -> JsValue {
-        if let CENNZnut::V0(cennznut) = &self.0 {
-            if cennznut
+        if let TRNNut::V0(trnnut) = &self.0 {
+            if trnnut
                 .get_contract(from_slice_32(contract_address))
                 .is_none()
             {
                 return JsValue::UNDEFINED;
             }
             return JsValue::from_serde(
-                &cennznut
+                &trnnut
                     .get_contract(from_slice_32(contract_address))
                     .unwrap(),
             )
             .unwrap();
         }
-        panic!("unsupported cennznut version");
+        panic!("unsupported trnnut version");
     }
 
     #[allow(non_snake_case)]
-    /// Verify cennznut is valid for contract_address
+    /// Verify trnnut is valid for contract_address
     pub fn verifyContract(&self, contract_address: &[u8]) -> bool {
-        if let CENNZnut::V0(cennznut) = &self.0 {
-            return cennznut
+        if let TRNNut::V0(trnnut) = &self.0 {
+            return trnnut
                 .validate_contract(from_slice_32(contract_address))
                 .is_ok();
         }
-        panic!("unsupported cennznut version");
+        panic!("unsupported trnnut version");
     }
 
-    /// Encode the cennznut into bytes
+    /// Encode the trnnut into bytes
     pub fn encode(&mut self) -> Vec<u8> {
         self.0.encode()
     }
 
-    /// Decode a version 0 cennznut from `input` bytes
+    /// Decode a version 0 trnnut from `input` bytes
     pub fn decode(input: &[u8]) -> Result<JsHandle, JsValue> {
-        match CENNZnut::decode(&mut &input[..]) {
-            Ok(cennznut) => Ok(JsHandle(cennznut)),
+        match TRNNut::decode(&mut &input[..]) {
+            Ok(trnnut) => Ok(JsHandle(trnnut)),
             Err(err) => {
                 log(&format!("failed decoding: {:?}", err));
                 Err(JsValue::undefined())
