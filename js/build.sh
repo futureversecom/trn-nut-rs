@@ -3,8 +3,8 @@ set -ex
 echo "building js pkg for $1 out to: $2"
 wasm-pack build \
     --target $1 \
-    --scope cennznet \
-    --out-name cennznut \
+    --scope trn \
+    --out-name trnnut \
     --out-dir $2 \
     --release
 

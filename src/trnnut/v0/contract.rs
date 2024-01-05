@@ -1,17 +1,17 @@
-// Copyright (C) 2019-2020 Centrality Investments Limited
+// Copyright 2022-2023 Futureverse Corporation Limited
 //!
-//! # CENNZnut - Contracts
+//! # TRNNut - Contracts
 //!
-//! Delegated smart contract permissioning of CENNZnut for use in CENNZnet
+//! Delegated smart contract permissions of TRNNut for use in TRN
 //!
 
-use crate::cennznut::{ContractAddress, CONTRACT_WILDCARD};
+use crate::trnnut::{ContractAddress, CONTRACT_WILDCARD};
 use codec::{Decode, Encode, Input, Output};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 const BLOCK_COOLDOWN_MASK: u8 = 0x01;
 
-/// A CENNZnet permission domain contract
+/// A TRN permission domain contract
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
 pub struct Contract {
@@ -41,7 +41,7 @@ impl Contract {
 }
 
 impl Encode for Contract {
-    fn encode_to<T: Output>(&self, buf: &mut T) {
+    fn encode_to<T: Output + ?Sized>(&self, buf: &mut T) {
         let has_cooldown_byte: u8 = if self.block_cooldown.is_some() {
             BLOCK_COOLDOWN_MASK
         } else {

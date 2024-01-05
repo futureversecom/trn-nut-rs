@@ -1,8 +1,8 @@
-// Copyright (C) 2019-2020 Centrality Investments Limited
+// Copyright 2022-2023 Futureverse Corporation Limited
 //!
-//! # CENNZnut - V0
+//! # TRNNut - V0
 //!
-//! Version 0 CENNZnut type.
+//! Version 0 TRNNut type.
 //!
 
 #[cfg(test)]
@@ -31,18 +31,18 @@ pub const MAX_MODULES: usize = 256;
 pub const MAX_METHODS: usize = 128;
 pub const MAX_CONTRACTS: usize = 255;
 pub const VERSION_BYTES: [u8; 2] = [0, 0];
-pub const MAX_CENNZNUT_BYTES: usize = u16::max_value() as usize;
+pub const MAX_TRNNUT_BYTES: usize = u16::max_value() as usize;
 
-/// A CENNZnet permission domain struct for embedding in doughnuts
+/// A TRN permission domain struct for embedding in doughnuts
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
-pub struct CENNZnutV0 {
+pub struct TRNNutV0 {
     pub modules: Vec<(ModuleName, Module)>,
     pub contracts: Vec<(ContractAddress, Contract)>,
 }
 
-impl CENNZnutV0 {
-    /// Returns the module, if it exists in the CENNZnut
+impl TRNNutV0 {
+    /// Returns the module, if it exists in the TRNNut
     /// Wildcard modules have lower priority than defined modules
     pub fn get_module(&self, module: &str) -> Option<&Module> {
         let mut outcome: Option<&Module> = None;
@@ -57,7 +57,7 @@ impl CENNZnutV0 {
         outcome
     }
 
-    /// Returns the contract, if it exists in the CENNZnut
+    /// Returns the contract, if it exists in the TRNNut
     /// Wildcard contracts (addr: 0) have lower priority than defined contracts
     pub fn get_contract(&self, contract: ContractAddress) -> Option<&Contract> {
         let mut outcome: Option<&Contract> = None;
@@ -73,8 +73,8 @@ impl CENNZnutV0 {
     }
 }
 
-impl Encode for CENNZnutV0 {
-    fn encode_to<T: Output>(&self, buf: &mut T) {
+impl Encode for TRNNutV0 {
+    fn encode_to<T: Output + ?Sized>(&self, buf: &mut T) {
         if self.modules.is_empty() || self.modules.len() > MAX_MODULES {
             return;
         }
@@ -109,13 +109,13 @@ impl Encode for CENNZnutV0 {
         }
 
         // Avoid writing outside of the allocated domain buffer
-        if preliminary_buf.len() <= MAX_CENNZNUT_BYTES {
+        if preliminary_buf.len() <= MAX_TRNNUT_BYTES {
             buf.write(preliminary_buf.as_slice());
         }
     }
 }
 
-impl PartialDecode for CENNZnutV0 {
+impl PartialDecode for TRNNutV0 {
     fn partial_decode<I: Input>(input: &mut I) -> Result<Self, codec::Error> {
         let module_count = input.read_byte()? + 1;
         let mut modules = Vec::<(ModuleName, Module)>::default();
@@ -137,7 +137,7 @@ impl PartialDecode for CENNZnutV0 {
     }
 }
 
-impl Decode for CENNZnutV0 {
+impl Decode for TRNNutV0 {
     fn decode<I: Input>(input: &mut I) -> Result<Self, codec::Error> {
         let version = u16::from_le_bytes([input.read_byte()?, input.read_byte()?]);
         if version != 0 {
@@ -147,8 +147,8 @@ impl Decode for CENNZnutV0 {
     }
 }
 
-impl CENNZnutV0 {
-    /// Validates a CENNZnut runtime module by:
+impl TRNNutV0 {
+    /// Validates a TRNNut runtime module by:
     /// (1) looking for `module_name` and `method_name`
     /// (2) executing the Pact interpreter if constraints exist
     ///
@@ -179,7 +179,7 @@ impl CENNZnutV0 {
         Ok(())
     }
 
-    /// Validates a CENNZnut smart contract by
+    /// Validates a TRNNut smart contract by
     /// (1) looking for `contract_address`
     ///
     /// # Errors
@@ -197,21 +197,21 @@ impl CENNZnutV0 {
 
 #[cfg(test)]
 mod test {
-    use super::CENNZnutV0;
     use super::Contract;
     use super::ContractAddress;
     use super::Module;
     use super::ModuleName;
+    use super::TRNNutV0;
     use super::CONTRACT_WILDCARD;
 
     #[test]
     fn it_gets_no_contract_from_empty_list() {
-        let cennznut = CENNZnutV0 {
+        let trnnut = TRNNutV0 {
             modules: Vec::<(ModuleName, Module)>::default(),
             contracts: Vec::<(ContractAddress, Contract)>::default(),
         };
 
-        assert_eq!(cennznut.get_contract([0x55; 32]), None);
+        assert_eq!(trnnut.get_contract([0x55; 32]), None);
     }
 
     #[test]
@@ -222,12 +222,12 @@ mod test {
         contracts.push((contract_a.address, contract_a));
         contracts.push((contract_b.address, contract_b));
 
-        let cennznut = CENNZnutV0 {
+        let trnnut = TRNNutV0 {
             modules: Vec::<(ModuleName, Module)>::default(),
             contracts,
         };
 
-        assert_eq!(cennznut.get_contract([0x55; 32]), None);
+        assert_eq!(trnnut.get_contract([0x55; 32]), None);
     }
 
     #[test]
@@ -238,12 +238,12 @@ mod test {
         contracts.push((contract_a.address, contract_a));
         contracts.push((contract_b.address, contract_b.clone()));
 
-        let cennznut = CENNZnutV0 {
+        let trnnut = TRNNutV0 {
             modules: Vec::<(ModuleName, Module)>::default(),
             contracts,
         };
 
-        assert_eq!(cennznut.get_contract([0x12_u8; 32]), Some(&contract_b));
+        assert_eq!(trnnut.get_contract([0x12_u8; 32]), Some(&contract_b));
     }
 
     #[test]
@@ -257,15 +257,12 @@ mod test {
         contracts.push((contract_wildcard.address, contract_wildcard.clone()));
         contracts.push((contract_b.address, contract_b));
 
-        let cennznut = CENNZnutV0 {
+        let trnnut = TRNNutV0 {
             modules: Vec::<(ModuleName, Module)>::default(),
             contracts,
         };
 
-        assert_eq!(
-            cennznut.get_contract([0x55_u8; 32]),
-            Some(&contract_wildcard)
-        );
+        assert_eq!(trnnut.get_contract([0x55_u8; 32]), Some(&contract_wildcard));
     }
 
     #[test]
@@ -279,11 +276,11 @@ mod test {
         contracts.push((contract_wildcard.address, contract_wildcard));
         contracts.push((contract_b.address, contract_b.clone()));
 
-        let cennznut = CENNZnutV0 {
+        let trnnut = TRNNutV0 {
             modules: Vec::<(ModuleName, Module)>::default(),
             contracts,
         };
 
-        assert_eq!(cennznut.get_contract([0x12_u8; 32]), Some(&contract_b));
+        assert_eq!(trnnut.get_contract([0x12_u8; 32]), Some(&contract_b));
     }
 }

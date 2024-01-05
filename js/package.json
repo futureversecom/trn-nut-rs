@@ -1,9 +1,9 @@
 {
-  "name": "@cennznet/cennznut-wasm",
+  "name": "@trn/trnnut-wasm",
   "version": "0.0.1-dev.0",
-  "description": "Wasm Cennznut codec",
-  "main": "libNode/cennznut.js",
-  "browser": "libBrowser/cennznut.js",
+  "description": "Wasm TRNNut codec",
+  "main": "libNode/trnnut.js",
+  "browser": "libBrowser/trnnut.js",
   "dependencies": {},
   "devDependencies": {
     "jest": "^26.0.1"
@@ -18,15 +18,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cennznet/cennznut-rs.git"
+    "url": "git+https://github.com/futureversecom/trn-nut-rs.git"
   },
   "keywords": [
-    "cennznut"
+    "trnnut"
   ],
-  "author": "Centrality Developers",
+  "author": "The Root Network Team",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/cennznet/cennznut-rs/issues"
+    "url": "https://github.com/futureversecom/trn-nut-rs/issues"
   },
-  "homepage": "https://github.com/cennznet/cennznut-rs/js#readme"
+  "homepage": "https://github.com/futureversecom/trn-nut-rs/js#readme"
 }

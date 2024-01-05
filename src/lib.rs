@@ -1,8 +1,8 @@
-// Copyright (C) 2019-2020 Centrality Investments Limited
+// Copyright 2022-2023 Futureverse Corporation Limited
 //!
-//! # CENNZnut
+//! # TRNNut
 //!
-//! Delegated authority nut for CENNZnet
+//! Delegated authority nut for TRN
 //!
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -18,16 +18,16 @@ extern crate std as alloc;
 use codec::Input;
 pub use core::convert::TryFrom;
 
-mod cennznut;
+mod trnnut;
 mod validation;
 
-pub use crate::cennznut::ContractDomain;
-pub use crate::cennznut::RuntimeDomain;
+pub use crate::trnnut::ContractDomain;
+pub use crate::trnnut::RuntimeDomain;
 
-pub use crate::cennznut::v0;
+pub use crate::trnnut::v0;
 
-pub use crate::cennznut::v0::CENNZnutV0;
-pub use crate::cennznut::CENNZnut;
+pub use crate::trnnut::v0::TRNNutV0;
+pub use crate::trnnut::TRNNut;
 pub use crate::validation::ValidationErr;
 
 mod test;

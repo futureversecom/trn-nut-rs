@@ -1,7 +1,7 @@
-// Copyright (C) 2019-2020 Centrality Investments Limited
-//! # CENNZnut
+// Copyright 2022-2023 Futureverse Corporation Limited
+//! # TRNNut
 //!
-//! Collection of versioned `CENNZnuts`
+//! Collection of versioned `TRNNuts`
 //!
 
 use alloc::fmt::{self, Display, Formatter};
@@ -17,8 +17,8 @@ use serde::{Deserialize, Serialize};
 pub mod v0;
 
 use core::convert::TryFrom;
-use v0::CENNZnutV0;
-use CENNZnut::V0;
+use v0::TRNNutV0;
+use TRNNut::V0;
 
 pub type ModuleName = String;
 pub type MethodName = String;
@@ -26,7 +26,7 @@ pub type ContractAddress = [u8; 32];
 pub const CONTRACT_WILDCARD: ContractAddress = [0_u8; 32];
 pub const WILDCARD: &str = "*";
 
-/// A CENNZnet module permission domain
+/// A TRN module permission domain
 #[derive(Debug, Eq, PartialEq)]
 pub enum RuntimeDomain {
     Method,
@@ -34,7 +34,7 @@ pub enum RuntimeDomain {
     Module,
 }
 
-/// A CENNZnet contract permission domain
+/// A TRN contract permission domain
 #[derive(Debug, Eq, PartialEq)]
 pub enum ContractDomain {
     Contract,
@@ -60,35 +60,35 @@ impl Display for ContractDomain {
 
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
-pub enum CENNZnut {
-    V0(CENNZnutV0),
+pub enum TRNNut {
+    V0(TRNNutV0),
 }
 
 #[allow(unreachable_patterns)]
-impl TryFrom<CENNZnut> for CENNZnutV0 {
+impl TryFrom<TRNNut> for TRNNutV0 {
     type Error = codec::Error;
-    fn try_from(v: CENNZnut) -> Result<Self, Self::Error> {
+    fn try_from(v: TRNNut) -> Result<Self, Self::Error> {
         match v {
             V0(inner) => Ok(inner),
-            _ => Err(codec::Error::from("CENNZnut version is not 0")),
+            _ => Err(codec::Error::from("TRNNut version is not 0")),
         }
     }
 }
 
-impl Encode for CENNZnut {
-    fn encode_to<T: Output>(&self, buf: &mut T) {
+impl Encode for TRNNut {
+    fn encode_to<T: Output + ?Sized>(&self, buf: &mut T) {
         match &self {
             V0(inner) => inner.encode_to(buf),
         }
     }
 }
 
-impl Decode for CENNZnut {
+impl Decode for TRNNut {
     fn decode<I: Input>(input: &mut I) -> Result<Self, codec::Error> {
         let version = u16::from_le_bytes([input.read_byte()?, input.read_byte()?]);
 
         match version {
-            0 => match CENNZnutV0::partial_decode(input) {
+            0 => match TRNNutV0::partial_decode(input) {
                 Ok(inner) => Ok(V0(inner)),
                 Err(e) => Err(e),
             },
@@ -97,10 +97,10 @@ impl Decode for CENNZnut {
     }
 }
 
-impl CENNZnut {
-    /// Validates a CENNZnut runtime module call by:
+impl TRNNut {
+    /// Validates a TRNNut runtime module call by:
     /// (1) identifying the version to be validated
-    /// (2) executing the specific cennznut version's validation function
+    /// (2) executing the specific trnnut version's validation function
     ///
     /// # Errors
     ///
@@ -116,9 +116,9 @@ impl CENNZnut {
         }
     }
 
-    /// Validates a CENNZnut smart contract call by:
+    /// Validates a TRNNut smart contract call by:
     /// (1) identifying the version to be validated
-    /// (2) executing the specific cennznut version's validation function
+    /// (2) executing the specific trnnut version's validation function
     ///
     /// # Errors
     ///
@@ -136,7 +136,7 @@ impl CENNZnut {
 #[cfg(test)]
 mod test {
     use super::v0::{contract::Contract, method::Method, module::Module};
-    use super::{CENNZnut, CENNZnutV0, ContractAddress, MethodName, ModuleName};
+    use super::{ContractAddress, MethodName, ModuleName, TRNNut, TRNNutV0};
 
     fn make_methods(method: &Method) -> Vec<(MethodName, Method)> {
         let mut methods = Vec::<(MethodName, Method)>::default();
@@ -165,10 +165,10 @@ mod test {
 
         let contracts = Vec::<(ContractAddress, Contract)>::default();
 
-        let cennznut = CENNZnut::V0(CENNZnutV0 { modules, contracts });
+        let trnnut = TRNNut::V0(TRNNutV0 { modules, contracts });
 
         assert_eq!(
-            cennznut.validate_runtime_call(&module.name, &method.name, &[]),
+            trnnut.validate_runtime_call(&module.name, &method.name, &[]),
             Ok(())
         );
     }
@@ -180,8 +180,8 @@ mod test {
         let contract = Contract::new(&[0x12_u8; 32]);
         let contracts = make_contracts(&contract);
 
-        let cennznut = CENNZnut::V0(CENNZnutV0 { modules, contracts });
+        let trnnut = TRNNut::V0(TRNNutV0 { modules, contracts });
 
-        assert_eq!(cennznut.validate_contract_call(&contract.address), Ok(()));
+        assert_eq!(trnnut.validate_contract_call(&contract.address), Ok(()));
     }
 }

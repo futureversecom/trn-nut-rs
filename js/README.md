@@ -1,12 +1,12 @@
-# @cennznet/cennznut-wasm
+# @trn/trnnut-wasm
 
-Wasm CENNZnut codec and maker.
+Wasm TRNNut codec and maker.
 Currently compliant with the version 0 spec.  
 
-## Create a Cennznut (unsigned)
+## Create a TRNNut (unsigned)
 
 ```js
-const Cennznut = require('@cennznet/cennznut-wasm').default;
+const TRNNut = require('@trn/trnnut-wasm').default;
 
 // modules (first param) is a vector of tuple of module name and module -  Vec<(ModuleName, Module)>
 // Method is a vector of tuple method name and method - Vec<(MethodName, Method)>
@@ -50,32 +50,32 @@ const modules =  [
                       ]
                     ];
 
-return new Cennznut(modules, contracts);
+return new TRNNut(modules, contracts);
 ```
 
-## Inspect Cennznut Fields
+## Inspect TRNNut Fields
 
-Getter functions for inspecting a CENNZnut
+Getter functions for inspecting a TRNNut
 
 ```js
-const cennznut = new Cennznut(...);
-  module = cennznut.getModule("module_test"); // returns the module with name 'module_test' if exist else returns undefined
-  contracts =  cennznut.getContract(contract_address); // returns contract with contract_address if exist else returns undefined
+const trnnut = new TRNNut(...);
+  module = trnnut.getModule("module_test"); // returns the module with name 'module_test' if exist else returns undefined
+  contracts =  trnnut.getContract(contract_address); // returns contract with contract_address if exist else returns undefined
 
 ```
 
-## Cennznut Encoding and Decoding
+## TRNNut Encoding and Decoding
 
-`Encoding`: Encode a cennznut object
+`Encoding`: Encode a trnnut object
 
-`Decoding`: Create a cennznut object from a encoded cennznut
+`Decoding`: Create a trnnut object from a encoded trnnut
 
 ```js
-const Cennznut = require('@cennznet/cennznut-wasm').default;
+const TRNNut = require('@trn/trnnut-wasm').default;
 
 const payload = [0, 0, 0, 1, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, ..., 0, 0, 0, 0, 0, 0, 0, 0, 0];
-const cennznut = Cennznut.decode(payload);
+const trnnut = TRNNut.decode(payload);
 
-const cennznut = new Cennznut(...);
-const encoded = cennznut.encode();
+const trnnut = new TRNNut(...);
+const encoded = trnnut.encode();
 ```
