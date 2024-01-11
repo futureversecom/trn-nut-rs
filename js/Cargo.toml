@@ -2,7 +2,7 @@
  name = "js"
  version = "0.0.1"
  authors = ["The Root Network Team"]
- edition = "2018"
+ edition = "2021"
  description = "JS/Wasm bindings for the rust TRNNut codec"
  license = "UNLICENSED"
  repository = "https://github.com/futureversecom/trn-trnnut-rs"
@@ -16,7 +16,7 @@
  clear_on_drop = { version = "0.2.3", features = ["no_cc"] }
  parity-scale-codec = { version = "3.6.9", features = ["derive"] }
  pact = { branch = "0.1.0", git = "https://github.com/cennznet/pact", default-features = false }
- serde = { version = "1.0.145", features = ["derive"] }
+ serde = { version = "1.0.145", default-features = false, features = ["derive"] }
 
  [profile.release]
  # disable loop vectorization for smaller wasm
