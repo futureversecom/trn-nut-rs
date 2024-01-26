@@ -8,7 +8,7 @@ use alloc::fmt::{self, Display, Formatter};
 use alloc::string::String;
 
 use codec::{Decode, Encode, Input, Output};
-use pact::interpreter::types::PactType;
+use pact::types::PactType;
 
 use crate::PartialDecode;
 use crate::ValidationErr;

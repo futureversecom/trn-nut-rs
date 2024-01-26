@@ -175,7 +175,6 @@ checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 [[package]]
 name = "pact"
 version = "0.2.0"
-source = "git+https://github.com/futureversecom/trn-pact?branch=feat/wasm-pack#fe3279d26deb6c6a1479d56d0bf8f545fbb809e4"
 dependencies = [
  "bit_reverse",
  "hashbrown 0.6.3",

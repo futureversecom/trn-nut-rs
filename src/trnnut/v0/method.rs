@@ -10,7 +10,7 @@ use alloc::string::ToString;
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Input, Output};
 use core::convert::TryFrom;
-use pact::contract::Contract as PactContract;
+use pact::types::Contract as PactContract;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 

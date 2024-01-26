@@ -15,8 +15,8 @@ use crate::trnnut::{
 use crate::{TRNNut, TRNNutV0, TryFrom, ValidationErr};
 
 use codec::{Decode, Encode};
-use pact::contract::{Contract as PactContract, DataTable};
-use pact::interpreter::OpCode;
+use pact::interpreter::{Comparator, OpCode, OpComp};
+use pact::types::{Contract as PactContract, DataTable};
 use pact::types::{Numeric, PactType, StringLike};
 use std::vec::Vec;
 
@@ -359,9 +359,15 @@ fn it_works_encode_with_constraints() {
         data_table: DataTable::new(vec![
             PactType::Numeric(Numeric(111)),
             PactType::Numeric(Numeric(333)),
-            PactType::StringLike(StringLike(b"testing")),
+            PactType::StringLike(StringLike(b"testing".to_vec())),
         ]),
-        bytecode: [OpCode::EQ.into(), 0, 0, 1, 0, OpCode::EQ.into(), 0, 1, 1, 1].to_vec(),
+        bytecode: [
+            OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+            0x00,
+            OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+            0x11,
+        ]
+        .to_vec(),
     };
     let mut constraints: Vec<u8> = Vec::new();
     pact.encode(&mut constraints);
@@ -382,9 +388,9 @@ fn it_works_encode_with_constraints() {
         vec![
             0, 0, 0, 0, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 109, 101, 116, 104, 111, 100, 95, 116,
-            101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0,
+            101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0,
             192, 128, 16, 246, 0, 0, 0, 0, 0, 0, 0, 128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224,
-            116, 101, 115, 116, 105, 110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1, 0,
+            116, 101, 115, 116, 105, 110, 103, 0, 0, 0, 17, 0
         ]
     );
     let constraints_length_byte_cursor: usize = 4 + 32 + 1 + 32;
@@ -398,9 +404,9 @@ fn it_works_decode_with_constraints() {
     let encoded: Vec<u8> = vec![
         0, 0, 0, 0, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 109, 101, 116, 104, 111, 100, 95, 116, 101, 115,
-        116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 192, 128, 16,
+        116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 192, 128, 16,
         246, 0, 0, 0, 0, 0, 0, 0, 128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116,
-        105, 110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1, 0,
+        105, 110, 103, 0, 0, 0, 17, 0,
     ];
     let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("it works");
     assert_eq!(c.encode(), encoded);
@@ -465,9 +471,15 @@ fn it_validates_modules() {
     let pact = PactContract {
         data_table: DataTable::new(vec![
             PactType::Numeric(Numeric(123)),
-            PactType::StringLike(StringLike(b"test")),
+            PactType::StringLike(StringLike(b"test".to_vec())),
         ]),
-        bytecode: [OpCode::EQ.into(), 0, 0, 1, 0, OpCode::EQ.into(), 0, 1, 1, 1].to_vec(),
+        bytecode: [
+            OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+            0x00,
+            OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+            0x11,
+        ]
+        .to_vec(),
     };
     let mut constraints: Vec<u8> = Vec::new();
     pact.encode(&mut constraints);
@@ -487,7 +499,7 @@ fn it_validates_modules() {
     let trnnut = TRNNutV0 { modules, contracts };
     let args = [
         PactType::Numeric(Numeric(123)),
-        PactType::StringLike(StringLike(b"test")),
+        PactType::StringLike(StringLike(b"test".to_vec())),
     ];
 
     assert_eq!(
@@ -546,8 +558,8 @@ fn it_validates_wildcard_contract() {
 #[test]
 fn it_validate_modules_error_with_bad_bytecode() {
     let pact = PactContract {
-        data_table: DataTable::new(vec![PactType::StringLike(StringLike(b"test"))]),
-        bytecode: [OpCode::GT.into(), 0, 0, 1, 0].to_vec(),
+        data_table: DataTable::new(vec![PactType::StringLike(StringLike(b"test".to_vec()))]),
+        bytecode: [OpComp::GT.into(), 0, 0, 1, 0].to_vec(),
     };
     let mut constraints: Vec<u8> = Vec::new();
     pact.encode(&mut constraints);
@@ -565,7 +577,7 @@ fn it_validate_modules_error_with_bad_bytecode() {
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
     let trnnut = TRNNutV0 { modules, contracts };
-    let args = [PactType::StringLike(StringLike(b"test"))];
+    let args = [PactType::StringLike(StringLike(b"test".to_vec()))];
 
     assert_eq!(
         trnnut.validate_module(&module.name, &method.name, &args),
@@ -578,9 +590,21 @@ fn it_validate_modules_error_with_false_constraints() {
     let pact = PactContract {
         data_table: DataTable::new(vec![
             PactType::Numeric(Numeric(123)),
-            PactType::StringLike(StringLike(b"a")),
+            PactType::StringLike(StringLike(b"a".to_vec())),
         ]),
-        bytecode: [OpCode::EQ.into(), 0, 0, 1, 0, OpCode::EQ.into(), 0, 1, 1, 1].to_vec(),
+        bytecode: [
+            OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+            0,
+            0,
+            1,
+            0,
+            OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+            0,
+            1,
+            1,
+            1,
+        ]
+        .to_vec(),
     };
     let mut constraints: Vec<u8> = Vec::new();
     pact.encode(&mut constraints);
@@ -600,7 +624,7 @@ fn it_validate_modules_error_with_false_constraints() {
     let trnnut = TRNNutV0 { modules, contracts };
     let args = [
         PactType::Numeric(Numeric(321)),
-        PactType::StringLike(StringLike(b"b")),
+        PactType::StringLike(StringLike(b"b".to_vec())),
     ];
 
     assert_eq!(
@@ -624,7 +648,7 @@ fn it_validate_modules_with_empty_constraints() {
     let trnnut = TRNNutV0 { modules, contracts };
     let args = [
         PactType::Numeric(Numeric(0)),
-        PactType::StringLike(StringLike(b"test")),
+        PactType::StringLike(StringLike(b"test".to_vec())),
     ];
 
     assert_eq!(
@@ -639,9 +663,9 @@ fn it_works_get_pact() {
     let encoded_with: Vec<u8> = vec![
         0, 0, 0, 0, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 109, 101, 116, 104, 111, 100, 95, 116, 101, 115,
-        116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 192, 128, 16,
+        116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 192, 128, 16,
         246, 0, 0, 0, 0, 0, 0, 0, 128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116,
-        105, 110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1, 0,
+        105, 110, 103, 0, 0, 0, 17, 0,
     ];
 
     let trnnut_with: TRNNut = Decode::decode(&mut &encoded_with[..]).expect("it works");
@@ -654,15 +678,22 @@ fn it_works_get_pact() {
         .get_pact();
 
     if let Some(pact) = pact_with {
+        println!("{:?}", pact);
         assert_eq!(
             pact,
             PactContract {
                 data_table: DataTable::new(vec![
                     PactType::Numeric(Numeric(111)),
                     PactType::Numeric(Numeric(333)),
-                    PactType::StringLike(StringLike(b"testing")),
+                    PactType::StringLike(StringLike(b"testing".to_vec())),
                 ]),
-                bytecode: [OpCode::EQ.into(), 0, 0, 1, 0, OpCode::EQ.into(), 0, 1, 1, 1].to_vec(),
+                bytecode: [
+                    OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+                    0x00,
+                    OpCode::COMP(Comparator::new(OpComp::EQ)).into(),
+                    0x11,
+                ]
+                .to_vec(),
             }
         );
     }

@@ -12,7 +12,7 @@ use alloc::borrow::ToOwned;
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Input, Output};
 use core::convert::TryFrom;
-use pact::interpreter::{interpret, types::PactType};
+use pact::{interpreter::interpret, types::PactType};
 
 pub mod contract;
 pub mod method;
