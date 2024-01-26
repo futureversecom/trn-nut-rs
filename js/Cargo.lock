@@ -222,7 +222,7 @@ name = "js"
 version = "0.0.1"
 dependencies = [
  "clear_on_drop",
- "pact",
+ "pact 0.2.0",
  "parity-scale-codec",
  "serde",
  "trnnut-rs",
@@ -271,12 +271,21 @@ checksum = "2839e79665f131bdb5782e51f2c6c9599c133c6098982a54c794358bf432529c"
 [[package]]
 name = "pact"
 version = "0.1.0"
-source = "git+https://github.com/cennznet/pact?branch=0.1.0#8a711951b7684af1d3631e52789a2ee6f7dc6816"
+source = "git+https://github.com/futureversecom/pact?branch=0.1.0#8a711951b7684af1d3631e52789a2ee6f7dc6816"
 dependencies = [
  "bit_reverse",
  "hashbrown 0.6.3",
  "pest",
  "pest_derive",
+]
+
+[[package]]
+name = "pact"
+version = "0.2.0"
+source = "git+https://github.com/futureversecom/pact?branch=main#6b4680edc8b3cde134b504d057310499afd9a281"
+dependencies = [
+ "bit_reverse",
+ "hashbrown 0.6.3",
 ]
 
 [[package]]
@@ -486,7 +495,7 @@ dependencies = [
 name = "trnnut-rs"
 version = "0.1.1"
 dependencies = [
- "pact",
+ "pact 0.1.0",
  "parity-scale-codec",
  "serde",
  "serde_json",
