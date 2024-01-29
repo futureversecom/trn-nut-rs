@@ -36,6 +36,7 @@ impl JsHandle {
     #[wasm_bindgen(constructor)]
     /// Create a new TRNNut, it is always v0 for now
     pub fn new(modules: &JsValue, contracts: &JsValue) -> Self {
+        console_error_panic_hook::set_once();
         let modules_vec: Vec<(String, Module)> = modules
             .into_serde()
             .expect("Deserialization of modules failed");

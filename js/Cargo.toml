@@ -17,6 +17,7 @@
  parity-scale-codec = { version = "3.6.9", features = ["derive"] }
  pact = { branch = "feat/wasm-pack", git = "https://github.com/futureversecom/trn-pact", default-features = false }
  serde = { version = "1.0.145", features = ["derive"] }
+ console_error_panic_hook = "0.1"
 
  [profile.release]
  # disable loop vectorization for smaller wasm

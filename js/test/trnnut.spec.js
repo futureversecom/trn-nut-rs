@@ -90,4 +90,42 @@ describe("wasm trnnut", () => {
         let contract = trnnut.getContract(contract_address);
         expect(contract).toEqual(undefined);
     });
+    test ("create instance of trnnut with constraint payload", () => {
+        const contract_address = new Uint8Array([
+            27, 137,  65,  29, 182,  25, 157,  61,
+            226,  13, 230,  14, 111,   6,  25, 186,
+            227, 117, 177, 244, 172, 147,  40, 119,
+            209,  78,  13, 109, 236, 119, 205, 202
+        ]);
+
+        const module = [
+            [
+                "Balances",  {
+                "name":"Balances",
+                "block_cooldown":0,
+                "methods":[
+                    [
+                        "transfer",  {
+                        "name":"transfer",
+                        "block_cooldown":0,
+                        "constraints":[...contract_address]
+                    }
+                    ],
+                ]
+            }
+            ],
+        ];
+        const contract  = [[[27,137,65,29,182,25,157,61,226,13,230,14,111,6,25,186,227,117,177,244,172,147,40,119,209,78,13,109,236,119,205,202],{"address":[27,137,65,29,182,25,157,61,226,13,230,14,111,6,25,186,227,117,177,244,172,147,40,119,209,78,13,109,236,119,205,202],"block_cooldown":270549120}]];
+        const trnnut = new TRNNut(module, contract);
+
+        let extract_module = trnnut.getModule("Balances");
+        expect(extract_module.name).toEqual('Balances');
+        expect(extract_module.block_cooldown).toEqual(0);
+        expect(extract_module.methods[0]).toContain("transfer");
+        // expect(extract_module.methods[0].constraints).toEqual(contract_address)
+        let extract_contract = trnnut.getContract(contract_address);
+        expect(extract_contract.block_cooldown).toEqual(270549120);
+        expect(trnnut.verifyContract(contract_address)).toEqual(true);
+
+    });
 });
