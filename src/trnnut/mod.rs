@@ -21,7 +21,6 @@ use v0::TRNNutV0;
 use TRNNut::V0;
 
 pub type ModuleName = String;
-pub type MethodName = String;
 pub type ContractAddress = [u8; 32];
 pub const CONTRACT_WILDCARD: ContractAddress = [0_u8; 32];
 pub const WILDCARD: &str = "*";
@@ -136,11 +135,11 @@ impl TRNNut {
 #[cfg(test)]
 mod test {
     use super::v0::{contract::Contract, method::Method, module::Module};
-    use super::{ContractAddress, MethodName, ModuleName, TRNNut, TRNNutV0};
+    use super::{ContractAddress, ModuleName, TRNNut, TRNNutV0};
 
-    fn make_methods(method: &Method) -> Vec<(MethodName, Method)> {
-        let mut methods = Vec::<(MethodName, Method)>::default();
-        methods.push((method.name.clone(), method.clone()));
+    fn make_methods(method: &Method) -> Vec<Method> {
+        let mut methods = Vec::<Method>::default();
+        methods.push(method.clone());
         methods
     }
 

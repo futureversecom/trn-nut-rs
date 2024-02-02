@@ -5,7 +5,6 @@
 //! Delegated method permissions of TRNNut for use in TRN
 //!
 
-use crate::trnnut::MethodName;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Input, Output};
@@ -22,7 +21,7 @@ const MAX_CONSTRAINTS: usize = 256;
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
 pub struct Method {
-    pub name: MethodName,
+    pub name: String,
     pub block_cooldown: Option<u32>,
     pub constraints: Option<Vec<u8>>,
 }
