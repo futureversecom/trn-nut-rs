@@ -25,7 +25,7 @@ use module::Module;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
-use super::{ContractAddress, ModuleName, CONTRACT_WILDCARD, WILDCARD};
+use super::{ContractAddress, CONTRACT_WILDCARD, WILDCARD};
 
 pub const MAX_MODULES: usize = 256;
 pub const MAX_METHODS: usize = 128;
@@ -37,7 +37,7 @@ pub const MAX_TRNNUT_BYTES: usize = u16::max_value() as usize;
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
 pub struct TRNNutV0 {
-    pub modules: Vec<(ModuleName, Module)>,
+    pub modules: Vec<Module>,
     pub contracts: Vec<(ContractAddress, Contract)>,
 }
 
@@ -46,11 +46,11 @@ impl TRNNutV0 {
     /// Wildcard modules have lower priority than defined modules
     pub fn get_module(&self, module: &str) -> Option<&Module> {
         let mut outcome: Option<&Module> = None;
-        for (name, m) in &self.modules {
-            if name == module {
+        for m in &self.modules {
+            if m.name == module {
                 outcome = Some(m);
                 break;
-            } else if name == WILDCARD {
+            } else if m.name == WILDCARD {
                 outcome = Some(m);
             }
         }
@@ -87,7 +87,7 @@ impl Encode for TRNNutV0 {
         // Encode all modules, but make sure each encoding is valid
         // before modifying the output buffer.
         let mut module_payload_buf: Vec<u8> = Vec::<u8>::default();
-        for (_, module) in &self.modules {
+        for module in &self.modules {
             let mut module_buf: Vec<u8> = Vec::<u8>::default();
             module.encode_to(&mut module_buf);
             if module_buf.is_empty() {
@@ -118,11 +118,11 @@ impl Encode for TRNNutV0 {
 impl PartialDecode for TRNNutV0 {
     fn partial_decode<I: Input>(input: &mut I) -> Result<Self, codec::Error> {
         let module_count = input.read_byte()? + 1;
-        let mut modules = Vec::<(ModuleName, Module)>::default();
+        let mut modules = Vec::<Module>::default();
 
         for _ in 0..module_count {
             let m: Module = Decode::decode(input)?;
-            modules.push((m.name.to_owned(), m));
+            modules.push(m);
         }
 
         let contract_count = input.read_byte()?;
@@ -200,14 +200,13 @@ mod test {
     use super::Contract;
     use super::ContractAddress;
     use super::Module;
-    use super::ModuleName;
     use super::TRNNutV0;
     use super::CONTRACT_WILDCARD;
 
     #[test]
     fn it_gets_no_contract_from_empty_list() {
         let trnnut = TRNNutV0 {
-            modules: Vec::<(ModuleName, Module)>::default(),
+            modules: Vec::<Module>::default(),
             contracts: Vec::<(ContractAddress, Contract)>::default(),
         };
 
@@ -223,7 +222,7 @@ mod test {
         contracts.push((contract_b.address, contract_b));
 
         let trnnut = TRNNutV0 {
-            modules: Vec::<(ModuleName, Module)>::default(),
+            modules: Vec::<Module>::default(),
             contracts,
         };
 
@@ -239,7 +238,7 @@ mod test {
         contracts.push((contract_b.address, contract_b.clone()));
 
         let trnnut = TRNNutV0 {
-            modules: Vec::<(ModuleName, Module)>::default(),
+            modules: Vec::<Module>::default(),
             contracts,
         };
 
@@ -258,7 +257,7 @@ mod test {
         contracts.push((contract_b.address, contract_b));
 
         let trnnut = TRNNutV0 {
-            modules: Vec::<(ModuleName, Module)>::default(),
+            modules: Vec::<Module>::default(),
             contracts,
         };
 
@@ -277,7 +276,7 @@ mod test {
         contracts.push((contract_b.address, contract_b.clone()));
 
         let trnnut = TRNNutV0 {
-            modules: Vec::<(ModuleName, Module)>::default(),
+            modules: Vec::<Module>::default(),
             contracts,
         };
 

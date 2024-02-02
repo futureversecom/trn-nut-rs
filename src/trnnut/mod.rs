@@ -5,8 +5,6 @@
 //!
 
 use alloc::fmt::{self, Display, Formatter};
-use alloc::string::String;
-
 use codec::{Decode, Encode, Input, Output};
 use pact::types::PactType;
 
@@ -20,7 +18,6 @@ use core::convert::TryFrom;
 use v0::TRNNutV0;
 use TRNNut::V0;
 
-pub type ModuleName = String;
 pub type ContractAddress = [u8; 32];
 pub const CONTRACT_WILDCARD: ContractAddress = [0_u8; 32];
 pub const WILDCARD: &str = "*";
@@ -135,7 +132,7 @@ impl TRNNut {
 #[cfg(test)]
 mod test {
     use super::v0::{contract::Contract, method::Method, module::Module};
-    use super::{ContractAddress, ModuleName, TRNNut, TRNNutV0};
+    use super::{ContractAddress, TRNNut, TRNNutV0};
 
     fn make_methods(method: &Method) -> Vec<Method> {
         let mut methods = Vec::<Method>::default();
@@ -143,9 +140,9 @@ mod test {
         methods
     }
 
-    fn make_modules(module: &Module) -> Vec<(ModuleName, Module)> {
-        let mut modules = Vec::<(ModuleName, Module)>::default();
-        modules.push((module.name.clone(), module.clone()));
+    fn make_modules(module: &Module) -> Vec<Module> {
+        let mut modules = Vec::<Module>::default();
+        modules.push(module.clone());
         modules
     }
 
@@ -174,7 +171,7 @@ mod test {
 
     #[test]
     fn it_validates_v0_contracts() {
-        let modules = Vec::<(ModuleName, Module)>::default();
+        let modules = Vec::<Module>::default();
 
         let contract = Contract::new(&[0x12_u8; 32]);
         let contracts = make_contracts(&contract);

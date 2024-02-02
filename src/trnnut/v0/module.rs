@@ -8,7 +8,6 @@
 use super::method::Method;
 use super::MAX_METHODS;
 use super::WILDCARD;
-use crate::trnnut::ModuleName;
 #[cfg(feature = "std")]
 use ::serde::{Deserialize, Serialize};
 use alloc::string::ToString;
@@ -21,7 +20,7 @@ const BLOCK_COOLDOWN_MASK: u8 = 0b0000_0001;
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
 pub struct Module {
-    pub name: ModuleName,
+    pub name: String,
     pub block_cooldown: Option<u32>,
     pub methods: Vec<Method>,
 }
@@ -180,7 +179,7 @@ mod test {
     #[test]
     fn it_does_not_encode_without_methods() {
         let module = Module::new("TestModule");
-        assert_eq!(module.encode(), []);
+        assert_eq!(module.encode(), Vec::<u8>::default());
     }
 
     #[test]

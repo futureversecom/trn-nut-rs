@@ -10,7 +10,7 @@ use super::method::Method;
 use super::module::Module;
 use crate::trnnut::{
     v0::{MAX_CONTRACTS, MAX_METHODS, MAX_MODULES},
-    ContractAddress, ContractDomain, ModuleName, RuntimeDomain, WILDCARD,
+    ContractAddress, ContractDomain, RuntimeDomain, WILDCARD,
 };
 use crate::{TRNNut, TRNNutV0, TryFrom, ValidationErr};
 
@@ -26,7 +26,7 @@ const MODULE_CONTRACT_BYTES: [u8; 67] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ];
 
-fn module_for_contracts() -> Vec<(ModuleName, Module)> {
+fn module_for_contracts() -> Vec<Module> {
     let method = Method::new("contract");
     let methods = make_methods(&method);
     let module = Module::new("call").methods(methods);
@@ -39,9 +39,9 @@ fn make_methods(method: &Method) -> Vec<Method> {
     methods
 }
 
-fn make_modules(module: &Module) -> Vec<(ModuleName, Module)> {
-    let mut modules = Vec::<(ModuleName, Module)>::default();
-    modules.push((module.name.clone(), module.clone()));
+fn make_modules(module: &Module) -> Vec<Module> {
+    let mut modules = Vec::<Module>::default();
+    modules.push(module.clone());
     modules
 }
 
@@ -442,9 +442,9 @@ fn it_works_with_lots_of_things_codec() {
         .block_cooldown(55_555)
         .methods(methods);
 
-    let mut modules: Vec<(ModuleName, Module)> = Vec::default();
-    modules.push((module.name.clone(), module));
-    modules.push((module2.name.clone(), module2));
+    let mut modules: Vec<Module> = Vec::default();
+    modules.push(module);
+    modules.push(module2);
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
@@ -518,7 +518,7 @@ fn it_validates_modules() {
 
 #[test]
 fn it_validates_contracts() {
-    let modules = Vec::<(ModuleName, Module)>::default();
+    let modules = Vec::<Module>::default();
 
     let contract = Contract::new(&[0x12_u8; 32]);
     let contracts = make_contracts(&contract);
@@ -530,7 +530,7 @@ fn it_validates_contracts() {
 
 #[test]
 fn it_invalidates_missing_contract() {
-    let modules = Vec::<(ModuleName, Module)>::default();
+    let modules = Vec::<Module>::default();
 
     let contract = Contract::new(&[0x12_u8; 32]);
     let contracts = make_contracts(&contract);
@@ -545,7 +545,7 @@ fn it_invalidates_missing_contract() {
 
 #[test]
 fn it_validates_wildcard_contract() {
-    let modules = Vec::<(ModuleName, Module)>::default();
+    let modules = Vec::<Module>::default();
 
     let contract = Contract::wildcard();
     let contracts = make_contracts(&contract);
@@ -877,9 +877,9 @@ fn registered_modules_have_priority_over_wildcard_modules() {
         .block_cooldown(123)
         .methods(methods);
 
-    let mut modules: Vec<(ModuleName, Module)> = Vec::default();
-    modules.push((wild_module.name.clone(), wild_module));
-    modules.push((registered_module.name.clone(), registered_module));
+    let mut modules: Vec<Module> = Vec::default();
+    modules.push(wild_module);
+    modules.push(registered_module);
 
     let contracts = Vec::<(ContractAddress, Contract)>::default();
 
@@ -892,7 +892,7 @@ fn registered_modules_have_priority_over_wildcard_modules() {
 
 #[test]
 fn it_fails_to_encode_with_zero_modules() {
-    let modules: Vec<(ModuleName, Module)> = Vec::default();
+    let modules: Vec<Module> = Vec::default();
     let contracts = Vec::<(ContractAddress, Contract)>::default();
     let trnnut = TRNNutV0 { modules, contracts };
     assert_eq!(trnnut.encode(), Vec::<u8>::default());
@@ -912,10 +912,10 @@ fn it_fails_to_encode_with_zero_methods() {
 fn it_fails_to_encode_with_too_many_modules() {
     let method = Method::new("registered_method");
     let methods = make_methods(&method);
-    let mut modules: Vec<(ModuleName, Module)> = Vec::default();
+    let mut modules: Vec<Module> = Vec::default();
     for x in 0..MAX_MODULES + 1 {
         let module = Module::new(&x.to_string()).methods(methods.clone());
-        modules.push((module.name.clone(), module));
+        modules.push(module);
     }
     let contracts = Vec::<(ContractAddress, Contract)>::default();
     let trnnut = TRNNutV0 { modules, contracts };
@@ -959,14 +959,14 @@ fn it_fails_to_encode_when_trnnut_is_too_large() {
     // 33 bytes per method, 33 + 33 * Method bytes per module
     // if 64 methods, per 64 modules, total bytes > 137,000
     let mut methods: Vec<Method> = Vec::default();
-    let mut modules: Vec<(ModuleName, Module)> = Vec::default();
+    let mut modules: Vec<Module> = Vec::default();
     for x in 0..64 + 1 {
         let method = Method::new(&x.to_string());
         methods.push(method);
     }
     for x in 0..64 + 1 {
         let module = Module::new(&x.to_string()).methods(methods.clone());
-        modules.push((module.name.clone(), module));
+        modules.push(module);
     }
     let contracts = Vec::<(ContractAddress, Contract)>::default();
     let trnnut = TRNNutV0 { modules, contracts };
