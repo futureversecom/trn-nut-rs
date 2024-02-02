@@ -182,7 +182,7 @@ version = "0.0.1"
 dependencies = [
  "clear_on_drop",
  "console_error_panic_hook",
- "pact 0.2.0 (git+https://github.com/futureversecom/trn-pact?branch=feat/wasm-pack)",
+ "pact",
  "parity-scale-codec",
  "serde",
  "trnnut-rs",
@@ -215,14 +215,6 @@ name = "memchr"
 version = "2.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "523dc4f511e55ab87b694dc30d0f820d60906ef06413f93d4d7a1385599cc149"
-
-[[package]]
-name = "pact"
-version = "0.2.0"
-dependencies = [
- "bit_reverse",
- "hashbrown 0.6.3",
-]
 
 [[package]]
 name = "pact"
@@ -385,7 +377,7 @@ dependencies = [
 name = "trnnut-rs"
 version = "0.1.1"
 dependencies = [
- "pact 0.2.0",
+ "pact",
  "parity-scale-codec",
  "serde",
  "serde_json",
