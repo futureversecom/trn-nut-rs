@@ -9,10 +9,11 @@ repository = "https://github.com/futureversecom/trn-trnnut-rs"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.6.9", default-features = false, features = ["derive"] }
-pact = { branch = "feat/wasm-pack", git = "https://github.com/futureversecom/trn-pact", default-features = false }
-#pact = { path = "../pact/", default-features = false }
 serde = { version = "1.0.145", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.64", default-features = false }
+
+# pact = { git = "https://github.com/futureversecom/trn-pact", branch = "feat/wasm-pack", default-features = false }
+pact = { path = "../trn-pact/", default-features = false }
 
 [features]
 default = [ "std" ]
