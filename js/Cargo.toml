@@ -1,27 +1,28 @@
 [package]
- name = "js"
- version = "0.0.1"
- authors = ["The Root Network Team"]
- edition = "2018"
- description = "JS/Wasm bindings for the rust TRNNut codec"
- license = "UNLICENSED"
- repository = "https://github.com/futureversecom/trn-trnnut-rs"
+name = "js"
+version = "0.0.1"
+authors = ["The Root Network Team"]
+edition = "2021"
+description = "JS/Wasm bindings for the rust TRNNut codec"
+license = "UNLICENSED"
+repository = "https://github.com/futureversecom/trn-trnnut-rs"
 
- [lib]
- crate-type = ["cdylib"]
+[lib]
+crate-type = ["cdylib"]
 
- [dependencies]
- trnnut-rs = { path = "../" }
- wasm-bindgen = { version = "0.2.63", features = ["serde-serialize"]  }
- clear_on_drop = { version = "0.2.3", features = ["no_cc"] }
- parity-scale-codec = { version = "3.6.9", features = ["derive"] }
- pact = { branch = "feat/wasm-pack", git = "https://github.com/futureversecom/trn-pact", default-features = false }
- serde = { version = "1.0.145", features = ["derive"] }
- console_error_panic_hook = "0.1"
+[dependencies]
+trnnut-rs = { path = "../" }
+wasm-bindgen = { version = "0.2.63", features = ["serde-serialize"]  }
+clear_on_drop = { version = "0.2.3", features = ["no_cc"] }
+parity-scale-codec = { version = "3.6.9", features = ["derive"] }
+serde = { version = "1.0.145", features = ["derive"] }
+console_error_panic_hook = "0.1"
 
- [profile.release]
- # disable loop vectorization for smaller wasm
- opt-level = "z"
- # disable parallel compilation
- codegen-units = 1
- lto = true
+pact = { branch = "feat/wasm-pack", git = "https://github.com/futureversecom/trn-pact", default-features = false }
+
+[profile.release]
+# disable loop vectorization for smaller wasm
+opt-level = "z"
+# disable parallel compilation
+codegen-units = 1
+lto = true
