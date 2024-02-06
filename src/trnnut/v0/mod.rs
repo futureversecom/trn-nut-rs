@@ -8,28 +8,24 @@
 #[cfg(test)]
 mod tests;
 
-use alloc::borrow::ToOwned;
 use alloc::vec::Vec;
 use codec::{Decode, Encode, Input, Output};
 use core::convert::TryFrom;
 use pact::{interpreter::interpret, types::PactType};
 
-pub mod contract;
 pub mod method;
 pub mod module;
 
-use super::{ContractDomain, RuntimeDomain};
+use super::RuntimeDomain;
 use crate::{PartialDecode, ValidationErr};
-use contract::Contract;
 use module::Module;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
-use super::{ContractAddress, CONTRACT_WILDCARD, WILDCARD};
+use super::WILDCARD;
 
 pub const MAX_MODULES: usize = 256;
 pub const MAX_METHODS: usize = 128;
-pub const MAX_CONTRACTS: usize = 255;
 pub const VERSION_BYTES: [u8; 2] = [0, 0];
 pub const MAX_TRNNUT_BYTES: usize = u16::max_value() as usize;
 
@@ -38,7 +34,6 @@ pub const MAX_TRNNUT_BYTES: usize = u16::max_value() as usize;
 #[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
 pub struct TRNNutV0 {
     pub modules: Vec<Module>,
-    pub contracts: Vec<(ContractAddress, Contract)>,
 }
 
 impl TRNNutV0 {
@@ -56,21 +51,6 @@ impl TRNNutV0 {
         }
         outcome
     }
-
-    /// Returns the contract, if it exists in the TRNNut
-    /// Wildcard contracts (addr: 0) have lower priority than defined contracts
-    pub fn get_contract(&self, contract: ContractAddress) -> Option<&Contract> {
-        let mut outcome: Option<&Contract> = None;
-        for (address, c) in &self.contracts {
-            if address == &contract {
-                outcome = Some(c);
-                break;
-            } else if address == &CONTRACT_WILDCARD {
-                outcome = Some(c);
-            }
-        }
-        outcome
-    }
 }
 
 impl Encode for TRNNutV0 {
@@ -79,10 +59,6 @@ impl Encode for TRNNutV0 {
             return;
         }
         let module_count = u8::try_from(self.modules.len() - 1);
-        let contract_count = u8::try_from(self.contracts.len());
-        if module_count.is_err() || contract_count.is_err() {
-            return;
-        }
 
         // Encode all modules, but make sure each encoding is valid
         // before modifying the output buffer.
@@ -103,11 +79,6 @@ impl Encode for TRNNutV0 {
         preliminary_buf.push_byte(module_count.unwrap());
         preliminary_buf.write(module_payload_buf.as_slice());
 
-        preliminary_buf.push_byte(contract_count.unwrap());
-        for (_, contract) in &self.contracts {
-            contract.encode_to(&mut preliminary_buf);
-        }
-
         // Avoid writing outside of the allocated domain buffer
         if preliminary_buf.len() <= MAX_TRNNUT_BYTES {
             buf.write(preliminary_buf.as_slice());
@@ -125,15 +96,7 @@ impl PartialDecode for TRNNutV0 {
             modules.push(m);
         }
 
-        let contract_count = input.read_byte()?;
-        let mut contracts = Vec::<(ContractAddress, Contract)>::default();
-
-        for _ in 0..contract_count {
-            let c: Contract = Decode::decode(input)?;
-            contracts.push((c.address, c));
-        }
-
-        Ok(Self { modules, contracts })
+        Ok(Self { modules })
     }
 }
 
@@ -177,109 +140,5 @@ impl TRNNutV0 {
             }
         }
         Ok(())
-    }
-
-    /// Validates a TRNNut smart contract by
-    /// (1) looking for `contract_address`
-    ///
-    /// # Errors
-    ///
-    /// Will return error if validation fails with the type of error embedded in `ContractDomain`
-    pub fn validate_contract(
-        &self,
-        contract_address: ContractAddress,
-    ) -> Result<(), ValidationErr<ContractDomain>> {
-        self.get_contract(contract_address)
-            .ok_or_else(|| ValidationErr::NoPermission(ContractDomain::Contract))?;
-        Ok(())
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::Contract;
-    use super::ContractAddress;
-    use super::Module;
-    use super::TRNNutV0;
-    use super::CONTRACT_WILDCARD;
-
-    #[test]
-    fn it_gets_no_contract_from_empty_list() {
-        let trnnut = TRNNutV0 {
-            modules: Vec::<Module>::default(),
-            contracts: Vec::<(ContractAddress, Contract)>::default(),
-        };
-
-        assert_eq!(trnnut.get_contract([0x55; 32]), None);
-    }
-
-    #[test]
-    fn it_gets_no_contract_from_list() {
-        let mut contracts = Vec::<(ContractAddress, Contract)>::default();
-        let contract_a = Contract::new(&[0x45_u8; 32]);
-        let contract_b = Contract::new(&[0x12_u8; 32]);
-        contracts.push((contract_a.address, contract_a));
-        contracts.push((contract_b.address, contract_b));
-
-        let trnnut = TRNNutV0 {
-            modules: Vec::<Module>::default(),
-            contracts,
-        };
-
-        assert_eq!(trnnut.get_contract([0x55; 32]), None);
-    }
-
-    #[test]
-    fn it_gets_a_contract() {
-        let mut contracts = Vec::<(ContractAddress, Contract)>::default();
-        let contract_a = Contract::new(&[0x45_u8; 32]);
-        let contract_b = Contract::new(&[0x12_u8; 32]);
-        contracts.push((contract_a.address, contract_a));
-        contracts.push((contract_b.address, contract_b.clone()));
-
-        let trnnut = TRNNutV0 {
-            modules: Vec::<Module>::default(),
-            contracts,
-        };
-
-        assert_eq!(trnnut.get_contract([0x12_u8; 32]), Some(&contract_b));
-    }
-
-    #[test]
-    fn it_gets_a_wildcard() {
-        let mut contracts = Vec::<(ContractAddress, Contract)>::default();
-        let contract_a = Contract::new(&[0x45_u8; 32]);
-        let contract_wildcard = Contract::new(&CONTRACT_WILDCARD);
-        let contract_b = Contract::new(&[0x12_u8; 32]);
-
-        contracts.push((contract_a.address, contract_a));
-        contracts.push((contract_wildcard.address, contract_wildcard.clone()));
-        contracts.push((contract_b.address, contract_b));
-
-        let trnnut = TRNNutV0 {
-            modules: Vec::<Module>::default(),
-            contracts,
-        };
-
-        assert_eq!(trnnut.get_contract([0x55_u8; 32]), Some(&contract_wildcard));
-    }
-
-    #[test]
-    fn it_gives_defined_contracts_prescedence_over_wildcards() {
-        let mut contracts = Vec::<(ContractAddress, Contract)>::default();
-        let contract_a = Contract::new(&[0x45_u8; 32]);
-        let contract_wildcard = Contract::new(&CONTRACT_WILDCARD);
-        let contract_b = Contract::new(&[0x12_u8; 32]);
-
-        contracts.push((contract_a.address, contract_a));
-        contracts.push((contract_wildcard.address, contract_wildcard));
-        contracts.push((contract_b.address, contract_b.clone()));
-
-        let trnnut = TRNNutV0 {
-            modules: Vec::<Module>::default(),
-            contracts,
-        };
-
-        assert_eq!(trnnut.get_contract([0x12_u8; 32]), Some(&contract_b));
     }
 }

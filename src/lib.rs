@@ -21,14 +21,10 @@ pub use core::convert::TryFrom;
 mod trnnut;
 mod validation;
 
-pub use crate::trnnut::ContractDomain;
-pub use crate::trnnut::RuntimeDomain;
-
-pub use crate::trnnut::v0;
-
-pub use crate::trnnut::v0::TRNNutV0;
-pub use crate::trnnut::TRNNut;
-pub use crate::validation::ValidationErr;
+pub use crate::{
+    trnnut::{v0, v0::TRNNutV0, RuntimeDomain, TRNNut},
+    validation::ValidationErr,
+};
 
 mod test;
 
