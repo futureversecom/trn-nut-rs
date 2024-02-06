@@ -194,10 +194,9 @@ version = "0.0.1"
 dependencies = [
  "clear_on_drop",
  "console_error_panic_hook",
- "pact",
+ "pact 0.2.0 (git+https://github.com/futureversecom/trn-pact?branch=feat/wasm-pack)",
  "parity-scale-codec",
  "serde",
- "serde-wasm-bindgen",
  "trnnut-rs",
  "wasm-bindgen",
 ]
@@ -225,6 +224,14 @@ name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
+
+[[package]]
+name = "pact"
+version = "0.2.0"
+dependencies = [
+ "bit_reverse",
+ "hashbrown 0.6.3",
+]
 
 [[package]]
 name = "pact"
@@ -311,17 +318,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde-wasm-bindgen"
-version = "0.6.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9b713f70513ae1f8d92665bbbbda5c295c2cf1da5542881ae5eefe20c9af132"
-dependencies = [
- "js-sys",
- "serde",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "serde_derive"
 version = "1.0.196"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -401,7 +397,7 @@ dependencies = [
 name = "trnnut-rs"
 version = "0.1.1"
 dependencies = [
- "pact",
+ "pact 0.2.0",
  "parity-scale-codec",
  "serde",
  "serde_json",
