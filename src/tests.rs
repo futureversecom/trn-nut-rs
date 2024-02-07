@@ -5,13 +5,10 @@
 
 #![cfg(test)]
 
-use super::method::Method;
-use super::module::Module;
-use crate::trnnut::{
-    v0::{MAX_METHODS, MAX_MODULES},
-    RuntimeDomain, WILDCARD,
-};
-use crate::{TRNNut, TRNNutV0, TryFrom, ValidationErr};
+use super::*;
+use crate::method::Method;
+use crate::module::Module;
+use crate::trnnut::{MAX_METHODS, MAX_MODULES};
 
 use codec::{Decode, Encode};
 use pact::interpreter::{Comparator, OpCode, OpComp};
@@ -85,7 +82,7 @@ fn it_works_decode() {
     ];
 
     let encoded: Vec<u8> = [encoded_version, encoded_modules].concat();
-    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("it works");
+    let c: TRNNutV0 = Decode::decode(&mut &encoded[..]).expect("it works");
 
     assert_eq!(c.encode(), encoded);
     let c0 = TRNNutV0::try_from(c).unwrap();
@@ -122,7 +119,7 @@ fn it_works_decode_with_module_cooldown() {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 81, 1, 0, 0, 109, 101, 116, 104, 111, 100, 95,
         116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
-    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("It works");
+    let c: TRNNutV0 = Decode::decode(&mut &encoded[..]).expect("It works");
     let c0 = TRNNutV0::try_from(c).unwrap();
     assert_eq!(
         c0.get_module("module_test")
@@ -163,7 +160,7 @@ fn it_works_decode_with_method_cooldown() {
         116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 123, 0,
         0, 0, 0,
     ];
-    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("It works");
+    let c: TRNNutV0 = Decode::decode(&mut &encoded[..]).expect("It works");
     let c0 = TRNNutV0::try_from(c).unwrap();
     assert_eq!(
         c0.get_module("module_test")
@@ -243,7 +240,7 @@ fn it_works_decode_with_constraints() {
         246, 0, 0, 0, 0, 0, 0, 0, 128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116,
         105, 110, 103, 0, 0, 0, 17,
     ];
-    let c: TRNNut = Decode::decode(&mut &encoded[..]).expect("it works");
+    let c: TRNNutV0 = Decode::decode(&mut &encoded[..]).expect("it works");
     assert_eq!(c.encode(), encoded);
 
     let c0 = TRNNutV0::try_from(c).unwrap();
@@ -454,7 +451,7 @@ fn it_works_get_pact() {
         105, 110, 103, 0, 0, 0, 17, 0,
     ];
 
-    let trnnut_with: TRNNut = Decode::decode(&mut &encoded_with[..]).expect("it works");
+    let trnnut_with: TRNNutV0 = Decode::decode(&mut &encoded_with[..]).expect("it works");
     let trnnut_with_v0 = TRNNutV0::try_from(trnnut_with).unwrap();
     let pact_with = trnnut_with_v0
         .get_module("module_test")
@@ -491,7 +488,7 @@ fn it_works_get_pact() {
         116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
 
-    let trnnut_without: TRNNut = Decode::decode(&mut &encoded_without[..]).expect("it works");
+    let trnnut_without: TRNNutV0 = Decode::decode(&mut &encoded_without[..]).expect("it works");
     let trnnut_without_v0 = TRNNutV0::try_from(trnnut_without).unwrap();
     let contract_without = trnnut_without_v0
         .get_module("module_test")
@@ -720,4 +717,34 @@ fn it_fails_to_encode_when_trnnut_is_too_large() {
     }
     let trnnut = TRNNutV0 { modules };
     assert_eq!(trnnut.encode(), Vec::<u8>::default());
+}
+
+#[test]
+fn it_fails_decode_with_invalid_constraints() {
+    let encoded_trnnut: Vec<u8> = vec![
+        0, 0, 1, 64, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 109, 101, 116, 104, 111, 100, 95, 116, 101, 115,
+        116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+
+    let bad_type_id: Vec<u8> = vec![3, 0, 0b1000_0000, 0b0000_0001, 0b0000_0001];
+    let n_too_short: Vec<u8> = vec![1, 0, 1];
+    let n_too_large: Vec<u8> = vec![3, 0, 0b1000_0000, 0b1000_0000, 0b0000_1111];
+
+    let encoded_with_bad_type_id: Vec<u8> = [encoded_trnnut.clone(), bad_type_id].concat();
+    let encoded_with_n_too_short: Vec<u8> = [encoded_trnnut.clone(), n_too_short].concat();
+    let encoded_with_n_too_large: Vec<u8> = [encoded_trnnut, n_too_large].concat();
+
+    assert_eq!(
+        TRNNutV0::decode(&mut &encoded_with_bad_type_id[..]),
+        Err(codec::Error::from("invalid constraints codec")),
+    );
+    assert_eq!(
+        TRNNutV0::decode(&mut &encoded_with_n_too_short[..]),
+        Err(codec::Error::from("invalid constraints codec")),
+    );
+    assert_eq!(
+        TRNNutV0::decode(&mut &encoded_with_n_too_large[..]),
+        Err(codec::Error::from("invalid constraints codec")),
+    );
 }

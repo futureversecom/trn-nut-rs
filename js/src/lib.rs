@@ -1,10 +1,14 @@
 // Copyright 2022-2023 Futureverse Corporation Limited
 
 //! Provide JS-Rust API bindings to create and inspect TRNNut
-use parity_scale_codec::{Decode, Encode};
+
+#![cfg_attr(not(feature = "std"), no_std)]
+extern crate alloc;
+
+use alloc::{format, vec::Vec};
+use codec::{Decode, Encode};
 use trnnut_rs::{
-    v0::{method::Method, module::Module, TRNNutV0},
-    TRNNut,
+    method::Method, module::Module, TRNNutV0,
 };
 use wasm_bindgen::prelude::*;
 
@@ -58,7 +62,7 @@ extern "C" {
 
 /// A js handle/wrapper for a rust versioned trnnut struct
 #[wasm_bindgen(js_name = TRNNut)]
-pub struct TRNNutJS(TRNNut);
+pub struct TRNNutJS(TRNNutV0);
 
 #[wasm_bindgen(js_class = TRNNut)]
 #[allow(irrefutable_let_patterns)]
@@ -68,23 +72,17 @@ impl TRNNutJS {
     pub fn new(modules: &JsValue) -> Self {
         console_error_panic_hook::set_once();
 
-        let modules: Vec<Module> = modules
-            .into_serde()
-            .expect("Deserialization of modules failed");
+        let modules: Vec<Module> = serde_wasm_bindgen::from_value(modules.clone()).expect("Deserialization of modules failed");
 
         let trnnut: TRNNutV0 = TRNNutV0 { modules };
-        TRNNutJS(TRNNut::V0(trnnut))
+        TRNNutJS(trnnut)
     }
 
     #[wasm_bindgen(js_name = getModule)]
     pub fn get_module(&self, module: &str) -> JsValue {
-        if let TRNNut::V0(trnnut) = &self.0 {
-            if trnnut.get_module(module).is_none() {
-                return JsValue::UNDEFINED;
-            }
-            return JsValue::from_serde(&trnnut.get_module(module).unwrap()).unwrap();
-        }
-        panic!("unsupported trnnut version");
+        self.0.get_module(module)
+            .map(|module| serde_wasm_bindgen::to_value(&module).unwrap_or(JsValue::UNDEFINED))
+            .unwrap_or(JsValue::UNDEFINED)
     }
 
     /// Encode the trnnut into bytes
@@ -94,7 +92,7 @@ impl TRNNutJS {
 
     /// Decode a version 0 trnnut from `input` bytes
     pub fn decode(input: &[u8]) -> Result<TRNNutJS, JsValue> {
-        match TRNNut::decode(&mut &input[..]) {
+        match TRNNutV0::decode(&mut &input[..]) {
             Ok(trnnut) => Ok(TRNNutJS(trnnut)),
             Err(err) => {
                 log(&format!("failed decoding: {:?}", err));

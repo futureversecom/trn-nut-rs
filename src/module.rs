@@ -6,19 +6,18 @@
 //!
 
 use super::method::Method;
-use super::MAX_METHODS;
+use crate::trnnut::MAX_METHODS;
 use super::WILDCARD;
-#[cfg(feature = "std")]
-use ::serde::{Deserialize, Serialize};
-use alloc::string::ToString;
-use alloc::vec::Vec;
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use codec::{Decode, Encode, Input, Output};
 use core::convert::TryFrom;
 const BLOCK_COOLDOWN_MASK: u8 = 0b0000_0001;
 
 /// A TRN permission domain module
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Module {
     pub name: String,
     pub block_cooldown: Option<u32>,
