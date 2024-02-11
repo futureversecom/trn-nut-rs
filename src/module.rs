@@ -6,25 +6,22 @@
 //!
 
 use super::method::Method;
-use super::MAX_METHODS;
+use crate::trnnut::MAX_METHODS;
 use super::WILDCARD;
-use crate::trnnut::{MethodName, ModuleName};
-#[cfg(feature = "std")]
-use ::serde::{Deserialize, Serialize};
-use alloc::borrow::ToOwned;
-use alloc::string::ToString;
-use alloc::vec::Vec;
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use codec::{Decode, Encode, Input, Output};
 use core::convert::TryFrom;
 const BLOCK_COOLDOWN_MASK: u8 = 0b0000_0001;
 
 /// A TRN permission domain module
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(test, derive(Clone, Debug, Eq, PartialEq))]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Module {
-    pub name: ModuleName,
+    pub name: String,
     pub block_cooldown: Option<u32>,
-    pub methods: Vec<(MethodName, Method)>,
+    pub methods: Vec<Method>,
 }
 
 impl Module {
@@ -41,7 +38,7 @@ impl Module {
         self
     }
 
-    pub fn methods(mut self, methods: Vec<(MethodName, Method)>) -> Self {
+    pub fn methods(mut self, methods: Vec<Method>) -> Self {
         self.methods = methods;
         self
     }
@@ -50,11 +47,11 @@ impl Module {
     /// Wildcard methods have lower priority than defined methods
     pub fn get_method(&self, method: &str) -> Option<&Method> {
         let mut outcome: Option<&Method> = None;
-        for (name, m) in &self.methods {
-            if name == method {
+        for m in &self.methods {
+            if m.name == method {
                 outcome = Some(m);
                 break;
-            } else if name == WILDCARD {
+            } else if m.name == WILDCARD {
                 outcome = Some(m);
             }
         }
@@ -89,7 +86,7 @@ impl Encode for Module {
             }
         }
 
-        for (_, method) in &self.methods {
+        for method in &self.methods {
             method.encode_to(buf);
         }
     }
@@ -121,11 +118,11 @@ impl Decode for Module {
                 None
             };
 
-        let mut methods: Vec<(MethodName, Method)> = Vec::default();
+        let mut methods: Vec<Method> = Vec::default();
 
         for _ in 0..method_count {
             let m: Method = Decode::decode(input)?;
-            methods.push((m.name.to_owned(), m));
+            methods.push(m);
         }
 
         Ok(Self {
@@ -145,7 +142,7 @@ mod test {
     macro_rules! methods {
         ($($name:expr),*) => {
             vec![
-                $( ( $name.to_string(), Method::new($name) ), )*
+                $( ( Method::new($name) ), )*
             ]
         }
     }
@@ -181,8 +178,7 @@ mod test {
     #[test]
     fn it_does_not_encode_without_methods() {
         let module = Module::new("TestModule");
-
-        assert_eq!(module.encode(), []);
+        assert_eq!(module.encode(), Vec::<u8>::default());
     }
 
     #[test]
@@ -333,12 +329,12 @@ mod test {
 
         let module = Module::decode(&mut &encoded[..]).unwrap();
 
-        assert_eq!(module.methods[0].0, "I");
-        assert_eq!(module.methods[1].0, "do");
-        assert_eq!(module.methods[2].0, "not");
-        assert_eq!(module.methods[3].0, "like");
-        assert_eq!(module.methods[4].0, "them");
-        assert_eq!(module.methods[5].0, "Sam");
-        assert_eq!(module.methods[6].0, "I am");
+        assert_eq!(module.methods[0].name, "I");
+        assert_eq!(module.methods[1].name, "do");
+        assert_eq!(module.methods[2].name, "not");
+        assert_eq!(module.methods[3].name, "like");
+        assert_eq!(module.methods[4].name, "them");
+        assert_eq!(module.methods[5].name, "Sam");
+        assert_eq!(module.methods[6].name, "I am");
     }
 }
